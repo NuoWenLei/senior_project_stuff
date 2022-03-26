@@ -5,11 +5,12 @@ from tensorflow.keras.layers import *
 
 class MetaLSTMCell(Layer):
 
-	def __init__(self, hidden_size, name = "MetaLSTMCell"):
+	def __init__(self, hidden_size, feature_size, name = "MetaLSTMCell"):
 
 		super().__init__(name = name)
 
 		self.hidden_size = hidden_size
+		self.feature_size = feature_size
 
 		self.weight_initializer = tf.random_normal_initializer()
 		self.uniform_initializer_bI = tf.random_uniform_initializer(minval = -5., maxval = -4.)
@@ -44,7 +45,7 @@ class MetaLSTMCell(Layer):
 
 class Part_A(Model):
 
-	def __init__(self, heads, query_size, feature_size, batch_size, hidden_size, embedding_size, name = "Part_A"):
+	def __init__(self, heads, query_size, feature_size, batch_size, embedding_size, name = "Part_A"):
 		super().__init__(name = name)
 
 		self.mha_1 = MultiHeadAttention(num_heads=heads, key_dim=query_size, attention_axes = 2)
@@ -57,11 +58,11 @@ class Part_A(Model):
 
 		self.batch_size = batch_size
 
-		self.hidden_size = hidden_size
+		self.hidden_size = embedding_size
 
 		self.embedding_size = embedding_size
 
-		self.embed_summarizer = LSTMCell(self.hidden_size, activation = "relu")
+		self.embed_summarizer = LSTMCell(self.embedding_size, activation = "relu")
 
 		self.meta_lstm = MetaLSTMCell(self.hidden_size)
 
@@ -87,14 +88,16 @@ class Part_A(Model):
 		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
 
 		if hidden_states is None:
-			h = tf.zeros((self.embedding_size,), dtype = tf.float32)
-			c = tf.zeros((self.embedding_size,), dtype = tf.float32)
-			f = tf.zeros((self.embedding_size, 1))
-			i = tf.zeros((self.embedding_size, 1))
+			h = tf.zeros((self.batch_size * self.feature_size, self.embedding_size), dtype = tf.float32)
+			c = tf.zeros((self.batch_size * self.feature_size, self.embedding_size,), dtype = tf.float32)
+			f = tf.zeros((self.batch_size, self.feature_size, self.embedding_size, 1))
+			i = tf.zeros((self.batch_size, self.feature_size, self.embedding_size, 1))
 			embed_c = tf.zeros((self.embedding_size, 1))
 			hidden_states = [(h, c), (f, i, embed_c)]
 
-		_, (paraphrased_embed, cell_x) = self.embed_summarizer(self_attention, hidden_states[0])[:, :, tf.newaxis, ...]
+		_, (hidden_x, cell_x) = self.embed_summarizer(tf.reshape(self_attention, (-1, self.embedding_size)), hidden_states[0])[:, :, tf.newaxis, ...]
+
+		paraphrased_embed = tf.reshape(hidden_x, (self.batch_size, self.feature_size, -1))
 
 		expanded_paraphrase = tf.repeat(paraphrased_embed, self.d_model, axis = -2)
 
@@ -109,7 +112,7 @@ class Part_A(Model):
 		# previous is previous embeddings
 		# new is self attention
 
-		return new_c, [(paraphrased_embed, cell_x), (new_f, new_i, new_c)]
+		return tf.reduce_sum(new_c, axis = 1), [(hidden_x, cell_x), (new_f, new_i, new_c)]
 
 
 
