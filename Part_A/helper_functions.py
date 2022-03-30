@@ -71,3 +71,9 @@ def load_embed_and_dictionary(path_to_words, path_to_embeds):
 	vocab_to_number = dict((w, i) for i, w in enumerate(vocab))
 	
 	return vocab, embed_mat, vocab_to_number
+
+def cosine_similarity(x, y):
+	x_norm = np.linalg.norm(x)
+	y_norm = np.linalg.norm(y)
+
+	return np.dot(x, y) / (x_norm * y_norm)

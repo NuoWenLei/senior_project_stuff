@@ -9,13 +9,7 @@ def get_base_learner(neurons, layers, pred_size):
 	for l in range(layers):
 		m.add(Dense(neurons, activation = "relu", name = f"base_model_{l}"))
 	
-	m.add(Dense(pred_size, activation = "softmax", name = "base_model_output"))
-
-	m.compile(
-		loss = "categorical_crossentropy",
-		optimizer = "adam",
-		metrics = ["accuracy"]
-	)
+	m.add(Dense(pred_size, activation = "linear", name = "base_model_output"))
 
 	return m
 
