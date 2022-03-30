@@ -64,6 +64,8 @@ class Part_A(Model):
 
 		self.embed_summarizer = LSTMCell(self.embedding_size, activation = "relu")
 
+		self.final_similarity_predictor = Dense(1, activation = "sigmoid")
+
 		self.meta_lstm = MetaLSTMCell(self.hidden_size)
 
 		self.prev_embeds = []
@@ -112,7 +114,9 @@ class Part_A(Model):
 		# previous is previous embeddings
 		# new is self attention
 
-		return tf.reduce_sum(new_c, axis = 1), [(hidden_x, cell_x), (new_f, new_i, new_c)]
+		sim_res = self.final_similarity_predictor(new_c)
+
+		return sim_res, [(hidden_x, cell_x), (new_f, new_i, new_c)]
 
 
 

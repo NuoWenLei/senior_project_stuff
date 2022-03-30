@@ -1,15 +1,31 @@
 import pandas as pd
 import numpy as np
+import tensorflow as tf
+import json
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
-def load_data(path):
-	df = pd.read_csv(path, delimiter = ";")
-	X_ = scale_data(df.drop("quality", axis = 1))
-	y_ = onehot_encode(df["quality"])
-	dataset = train_test_split(X_, y_, train_size = .8, random_state = 0)
+def load_dataset_generator(path):
+	df = pd.read_csv(path, delimiter = ";").drop(["pH", "citric acid"], axis = 1)
+	new_data = pd.DataFrame(scale_data(df), columns = df.columns)
+	generator = create_dataset_generator(new_data)
 
-	return dataset
+	return generator
+
+def create_dataset_generator(data):
+	cols = data.columns.values
+	i = 0
+	while True:
+		i += 1
+		if i > len(cols):
+			i = 1
+			p = np.random.permutation(cols.shape[0])
+			cols = cols[p]
+		
+		X_ = data.drop(cols[i], axis = 1)
+		y_ = data[cols[i]]
+
+		yield train_test_split(X_, y_, random_state = 0, train_size = .8)
 
 def scale_data(data):
 	minmax = MinMaxScaler()
@@ -26,4 +42,32 @@ def onehot_encode(y):
 
 	return new_y
 
+def create_flow(X, y, batch_size, mode = "train"):
 
+	if mode == "train":
+		i = 0
+		while True:
+			i += batch_size
+			if i + batch_size >= y.shape[0]:
+				i = batch_size
+				p = np.random.permutation(y.shape[0])
+				X = X[p]
+				y = y[p]
+			yield X[i-batch_size:i], y[i-batch_size:i]
+	
+	else:
+		i = 0
+		while i + batch_size < y.shape[0]:
+			i += batch_size
+			yield X[i-batch_size:i], y[i-batch_size:i]
+
+def load_embed_and_dictionary(path_to_words, path_to_embeds):
+	with open(path_to_words, "r") as word_path:
+		vocab = json.load(word_path)
+	
+	with open(path_to_embeds, "rb") as embed_path:
+		embed_mat = np.load(embed_path)
+
+	vocab_to_number = dict((w, i) for i, w in enumerate(vocab))
+	
+	return vocab, embed_mat, vocab_to_number
