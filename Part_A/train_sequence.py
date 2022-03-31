@@ -56,8 +56,8 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 
 		interpreter_inputs = {
 			"embeds": feature_embeds,
-			"weights": base_learner.layers[0].weights,
-			"biases": base_learner.layers[0].bias
+			"weights": base_learner.layers[0].weights[0],
+			"biases": base_learner.layers[0].weights[1]
 		}
 
 		interpreter_true_values = np.array([cosine_similarity(feature_embeds[f, ...], target_embed) for f in range(feature_embeds.shape[0])])
