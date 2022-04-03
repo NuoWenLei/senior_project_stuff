@@ -1,10 +1,10 @@
-from base_learner import *
-from Approach_1 import *
-from helper_functions import *
 from tqdm import tqdm
 import json
 import tensorflow as tf
 import numpy as np
+from base_learner import *
+from Approach_1 import *
+from helper_functions import *
 
 def train_sequence(path_to_params):
 	with open(path_to_params, "r") as params_json:
