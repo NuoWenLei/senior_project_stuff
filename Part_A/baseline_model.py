@@ -15,7 +15,7 @@ class Baseline_Model(Model):
 
 		new_embed = tf.reduce_sum(scaled_weights * embeds)
 
-		cos_sims = [cosine_similarity(new_embed, e)[tf.newaxis, ...] for e in embeds)]
+		cos_sims = [cosine_similarity(new_embed, e)[tf.newaxis, ...] for e in embeds]
 		
 		return tf.concat(cos_sims, axis = 0)
 
