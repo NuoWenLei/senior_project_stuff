@@ -29,8 +29,6 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			
 			train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-
-@tf.function()
 def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
 	# TODO: Train base learner and meta interpreter and calculate
 
@@ -43,8 +41,6 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 			train_batch = next(train_generator)
 			train_step(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, train_batch, params)
 
-
-@tf.function()
 def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params):
 	# TODO: Train base learner and meta interpreter and calculate 
 
