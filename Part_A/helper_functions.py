@@ -77,3 +77,8 @@ def cosine_similarity(x, y):
 	y_norm = np.linalg.norm(y)
 
 	return np.dot(x, y) / (x_norm * y_norm)
+
+def average_embed(words_string, embed_mat, dictionary):
+	words = words_string.split(" ")
+
+	return np.mean(np.array([embed_mat[dictionary[w]] for w in words]), axis = 0)

@@ -22,8 +22,8 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 		print(f"On Epoch {e}")
 		for s in tqdm(range(params["META_STEPS"])):
 			batch = next(generator)
-			feature_embeds = np.array([embed_mat[vocab_to_number[w]] for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
-			target_embed = np.mean(embed_mat[vocab_to_number[w]] for w in batch[2].name)
+			feature_embeds = np.array([average_embed(w, embed_mat, vocab_to_number) for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
+			target_embed = np.mean(average_embed(w, embed_mat, vocab_to_number) for w in batch[2].name)
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
