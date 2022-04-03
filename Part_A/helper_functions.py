@@ -73,10 +73,10 @@ def load_embed_and_dictionary(path_to_words, path_to_embeds):
 	return vocab, embed_mat, vocab_to_number
 
 def cosine_similarity(x, y):
-	x_norm = np.linalg.norm(x)
-	y_norm = np.linalg.norm(y)
+	x_norm = tf.linalg.normalize(x)
+	y_norm = tf.linalg.normalize(y)
 
-	return np.dot(x, y) / (x_norm * y_norm)
+	return tf.reduce_sum(x * y)/ (x_norm * y_norm)
 
 def average_embed(words_string, embed_mat, dictionary):
 	words = words_string.split(" ")
