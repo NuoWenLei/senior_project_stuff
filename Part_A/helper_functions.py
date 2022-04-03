@@ -22,8 +22,8 @@ def create_dataset_generator(data):
 			p = np.random.permutation(cols.shape[0])
 			cols = cols[p]
 		
-		X_ = data.drop(cols[i], axis = 1)
-		y_ = data[cols[i]]
+		X_ = data.drop(cols[i-1], axis = 1)
+		y_ = data[cols[i-1]]
 
 		yield train_test_split(X_, y_, random_state = 0, train_size = .8)
 

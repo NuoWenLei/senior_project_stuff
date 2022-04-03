@@ -60,7 +60,7 @@ def train_step(base_learner, baseline_interpreter, feature_embeds, target_embed,
 		
 		interpreter_outputs = baseline_interpreter(interpreter_inputs)
 
-		interpreter_mse_loss = tf.square(interpreter_outputs - interpreter_true_values)
+		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
 		print(interpreter_mse_loss)
 
