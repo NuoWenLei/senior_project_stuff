@@ -60,7 +60,7 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 	
 		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
 
-		interpreter_mse_loss = tf.square(interpreter_outputs - interpreter_true_values)
+		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
 		learner_grads = learner_tape.gradient(learner_mse_loss, base_learner.trainable_variables)
 
