@@ -58,7 +58,7 @@ def train_step(base_learner, baseline_interpreter, feature_embeds, target_embed,
 			"biases": base_learner.layers[0].weights[1]
 		}
 
-		interpreter_true_values = np.array([cosine_similarity(feature_embeds[f, ...], target_embed) for f in range(feature_embeds.shape[0])])
+		interpreter_true_values = tf.constant([cosine_similarity(feature_embeds[f, ...], target_embed) for f in range(feature_embeds.shape[0])])
 
 		interpreter_outputs = baseline_interpreter(interpreter_inputs)
 
