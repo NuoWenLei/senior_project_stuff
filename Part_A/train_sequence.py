@@ -43,7 +43,7 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params):
 	# TODO: Train base learner and meta interpreter and calculate 
 
-	with (tf.GradientTape(), tf.GradientTape()) as (learner_tape, meta_tape):
+	with tf.GradientTape() as learner_tape, tf.GradientTape() as meta_tape:
 
 				
 		y_pred = base_learner(inputs[0])
