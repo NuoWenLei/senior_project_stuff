@@ -11,7 +11,7 @@ import numpy as np
 def train_sequence(path_to_params):
 	with open(path_to_params, "r") as params_json:
 		params = json.load(params_json)
-	dataset_generator = load_dataset_generator(params["data_path"])
+	dataset_generator = load_dataset_generator(params["DATA_PATH"])
 	vocab, embed_mat, vocab_to_number = load_embed_and_dictionary(params["VOCAB_PATH"], params["EMBED_PATH"])
 	baseline = Baseline_Model()
 	interpreter_optimizer = tf.keras.optimizers.Adam()
