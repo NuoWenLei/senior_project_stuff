@@ -66,7 +66,7 @@ class Part_A(Model):
 
 		self.final_similarity_predictor = Dense(1, activation = "sigmoid")
 
-		self.meta_lstm = MetaLSTMCell(self.hidden_size)
+		self.meta_lstm = MetaLSTMCell(self.hidden_size, self.feature_size)
 
 		self.prev_embeds = []
 		self.prev_I = []
