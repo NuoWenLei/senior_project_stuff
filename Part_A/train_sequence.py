@@ -15,7 +15,6 @@ def train_sequence(path_to_params):
 	interpreter_optimizer = tf.keras.optimizers.Adam()
 	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params)
 
-@tf.function()
 def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params):
 
 	for e in range(params["META_EPOCHS"]):
