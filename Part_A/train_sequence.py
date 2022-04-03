@@ -34,7 +34,7 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 
 	X_train, X_test, y_train, y_test = batch
 
-	train_generator = create_flow(X_train, y_train, params["BATCH_SIZE"])
+	train_generator = create_flow(np.float32(X_train), np.float32(y_train), params["BATCH_SIZE"])
 
 	for ep in range(params["LEARNER_EPOCHS"]):
 		for st in range(params["LEARNER_STEPS"]):
