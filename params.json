@@ -1,8 +1,8 @@
 {
 	"STARTING_VOCAB": "wine",
 	"VOCAB_DEPTH": 4,
-	"PATH_TO_VOCAB": "/content/gdrive/MyDrive/Senior_Project_Stuff/Constructing_the_Model/Approach_1/wine_centered_words.json",
-	"PATH_TO_EMBEDDING": "/content/gdrive/MyDrive/Senior_Project_Stuff/Constructing_the_Model/Approach_1/wine_embedding_matrix.npy",
+	"VOCAB_PATH": "/content/gdrive/MyDrive/Senior_Project_Stuff/Constructing_the_Model/Approach_1/wine_centered_words.json",
+	"EMBED_PATH": "/content/gdrive/MyDrive/Senior_Project_Stuff/Constructing_the_Model/Approach_1/wine_embedding_matrix.npy",
 	"DATA_PATH": "/content/gdrive/MyDrive/Senior_Project_Stuff/Constructing_the_Model/Approach_1/winequality-red.csv",
 	"DATA_CYCLES": 20,
 	"BASE_NEURONS": 64,
