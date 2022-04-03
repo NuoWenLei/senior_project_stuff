@@ -13,7 +13,7 @@ class Baseline_Model(Model):
 
 		scaled_weights = weights / tf.reduce_sum(weights)
 
-		new_embed = tf.reduce_sum(scaled_weights * embeds)
+		new_embed = tf.reduce_sum(scaled_weights * embeds, axis = -2)
 		
 		return cosine_similarity(new_embed, embeds)
 
