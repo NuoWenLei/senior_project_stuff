@@ -42,8 +42,6 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 			train_batch = next(train_generator)
 			train_step(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, train_batch, params)
 
-
-@tf.function()
 def train_step(base_learner, baseline_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params):
 
 	with tf.GradientTape() as learner_tape:
