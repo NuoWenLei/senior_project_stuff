@@ -58,8 +58,8 @@ def train_step(base_learner, baseline_interpreter, feature_embeds, target_embed,
 			"biases": base_learner.layers[0].weights[1]
 		}
 
-		interpreter_true_values = tf.concat([cosine_similarity(feature_embeds[0, f, ...], target_embed)[tf.newaxis, ...] for f in range(feature_embeds.shape[0])], axis = 0)
-
+		interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
+		
 		interpreter_outputs = baseline_interpreter(interpreter_inputs)
 
 		interpreter_mse_loss = tf.square(interpreter_outputs - interpreter_true_values)
