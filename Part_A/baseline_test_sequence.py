@@ -50,7 +50,7 @@ def train_step(base_learner, baseline_interpreter, feature_embeds, target_embed,
 
 				
 		y_pred = base_learner(inputs[0])
-		learner_mse_loss = tf.square(np.float32(inputs[0]) - y_pred)
+		learner_mse_loss = tf.square(tf.cast(inputs[0], tf.float32) - y_pred)
 
 		interpreter_inputs = {
 			"embeds": feature_embeds,
