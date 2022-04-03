@@ -73,8 +73,8 @@ def load_embed_and_dictionary(path_to_words, path_to_embeds):
 	return vocab, embed_mat, vocab_to_number
 
 def cosine_similarity(x, y):
-	x_norm = tf.linalg.normalize(x)
-	y_norm = tf.linalg.normalize(y)
+	x_norm = tf.norm(x)
+	y_norm = tf.norm(y)
 
 	return tf.reduce_sum(x * y)/ (x_norm * y_norm)
 

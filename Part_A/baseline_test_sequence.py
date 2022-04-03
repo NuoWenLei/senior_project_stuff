@@ -24,7 +24,7 @@ def meta_train_function(meta_interpreter, generator, vocab, embed_mat, interpret
 		for s in tqdm(range(params["META_STEPS"])):
 			batch = next(generator)
 			feature_embeds = np.array([average_embed(w, embed_mat, vocab_to_number) for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
-			target_embed = np.mean(average_embed(batch[2].name, embed_mat, vocab_to_number))
+			target_embed = average_embed(batch[2].name, embed_mat, vocab_to_number)[tf.newaxis, ...]
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
@@ -58,7 +58,7 @@ def train_step(base_learner, baseline_interpreter, feature_embeds, target_embed,
 			"biases": base_learner.layers[0].weights[1]
 		}
 
-		interpreter_true_values = tf.constant([cosine_similarity(feature_embeds[f, ...], target_embed) for f in range(feature_embeds.shape[0])])
+		interpreter_true_values = tf.concat([cosine_similarity(feature_embeds[0, f, ...], target_embed)[tf.newaxis, ...] for f in range(feature_embeds.shape[0])], axis = 0)
 
 		interpreter_outputs = baseline_interpreter(interpreter_inputs)
 
