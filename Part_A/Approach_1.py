@@ -1,9 +1,9 @@
-from tokenize import _all_string_prefixes
-import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import *
+# from tokenize import _all_string_prefixes
+# import tensorflow as tf
+# from tensorflow.keras.models import Model
+# from tensorflow.keras.layers import *
 
-class MetaLSTMCell(Layer):
+class MetaLSTMCell(object):
 
 	def __init__(self, hidden_size, feature_size, name = "MetaLSTMCell"):
 
@@ -38,12 +38,7 @@ class MetaLSTMCell(Layer):
 
 
 
-
-
-
-
-
-class Part_A(Model):
+class Part_A(object):
 
 	def __init__(self, heads, query_size, feature_size, batch_size, embedding_size, name = "Part_A"):
 		super().__init__(name = name)
@@ -117,8 +112,6 @@ class Part_A(Model):
 		sim_res = self.final_similarity_predictor(new_c)
 
 		return sim_res, [(hidden_x, cell_x), (new_f, new_i, new_c)]
-
-
 
 
 

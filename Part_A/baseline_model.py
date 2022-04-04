@@ -1,9 +1,8 @@
-import tensorflow as tf
-from tensorflow.keras.models import Model
-from helper_functions import *
+# import tensorflow as tf
+# from tensorflow.keras.models import Model
+# from helper_functions import *
 
-
-class Baseline_Model(Model):
+class Baseline_Model(object):
 
 	def __init__(self, name = "baseline_part_a"):
 		super().__init__(name = name)
