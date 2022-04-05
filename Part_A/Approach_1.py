@@ -2,10 +2,10 @@
 # import tensorflow as tf
 # from tensorflow.keras.models import Model
 # from tensorflow.keras.layers import *
-from train_sequence import tf, Model, Layer, MultiHeadAttention, LSTMCell, LayerNormalization, Dense
+from train_sequence import tf
 # from train_sequence import 
 
-class MetaLSTMCell(Layer):
+class MetaLSTMCell(tf.keras.layers.Layer):
 
 	def __init__(self, hidden_size, feature_size, name = "MetaLSTMCell"):
 
@@ -40,14 +40,14 @@ class MetaLSTMCell(Layer):
 
 
 
-class Part_A(Model):
+class Part_A(tf.keras.models.Model):
 
 	def __init__(self, heads, query_size, feature_size, batch_size, embedding_size, name = "Part_A"):
 		super().__init__(name = name)
 
-		self.mha_1 = MultiHeadAttention(num_heads=heads, key_dim=query_size, attention_axes = 2)
+		self.mha_1 = tf.keras.layers.MultiHeadAttention(num_heads=heads, key_dim=query_size, attention_axes = 2)
 
-		self.norm = LayerNormalization()
+		self.norm = tf.keras.layers.LayerNormalization()
 
 		self.d_model = heads * query_size
 
@@ -59,9 +59,9 @@ class Part_A(Model):
 
 		self.embedding_size = embedding_size
 
-		self.embed_summarizer = LSTMCell(self.embedding_size, activation = "relu")
+		self.embed_summarizer = tf.keras.layers.LSTMCell(self.embedding_size, activation = "relu")
 
-		self.final_similarity_predictor = Dense(1, activation = "sigmoid")
+		self.final_similarity_predictor = tf.keras.layers.Dense(1, activation = "sigmoid")
 
 		self.meta_lstm = MetaLSTMCell(self.hidden_size, self.feature_size)
 

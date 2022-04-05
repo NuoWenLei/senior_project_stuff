@@ -2,8 +2,6 @@ import json, tensorflow as tf, pandas as pd, numpy as np
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import *
 from helper_functions import *
 from base_learner import *
 from Approach_1 import *
