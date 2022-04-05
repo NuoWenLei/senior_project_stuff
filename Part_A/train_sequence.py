@@ -35,14 +35,18 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 
 	X_train, X_test, y_train, y_test = batch
 
+	hidden_states = [None]
+
 	train_generator = create_flow(np.float32(X_train), np.float32(y_train), params["BATCH_SIZE"])
 
 	for ep in range(params["LEARNER_EPOCHS"]):
 		for st in range(params["LEARNER_STEPS"]):
 			train_batch = next(train_generator)
-			train_step(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, train_batch, params)
+			hs = train_step(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, train_batch, params, prev_state = hidden_states[-1])
+			hidden_states.append(hs)
 
-def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params):
+
+def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params, prev_state = None):
 	# TODO: Train base learner and meta interpreter and calculate 
 
 	with tf.GradientTape() as learner_tape, tf.GradientTape() as meta_tape:
@@ -59,7 +63,7 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 
 		interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
 	
-		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
+		interpreter_outputs, hidden_state = meta_interpreter_part_a(interpreter_inputs, prev_state)
 
 		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
@@ -70,6 +74,8 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
+
+	return hidden_state
 
 
 
