@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-import tensorflow as tf
+from train_sequence import tf, train_test_split, MinMaxScaler
 import json
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+# from sklearn.model_selection import 
+# from sklearn.preprocessing import 
 
 def load_dataset_generator(path):
 	df = pd.read_csv(path, delimiter = ";").drop(["pH", "citric acid"], axis = 1)

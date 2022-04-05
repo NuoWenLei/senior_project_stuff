@@ -2,8 +2,10 @@
 # import tensorflow as tf
 # from tensorflow.keras.models import Model
 # from tensorflow.keras.layers import *
+from train_sequence import tf, Model, Layer, MultiHeadAttention, LSTMCell, LayerNormalization, Dense
+# from train_sequence import 
 
-class MetaLSTMCell(object):
+class MetaLSTMCell(Layer):
 
 	def __init__(self, hidden_size, feature_size, name = "MetaLSTMCell"):
 
@@ -38,7 +40,7 @@ class MetaLSTMCell(object):
 
 
 
-class Part_A(object):
+class Part_A(Model):
 
 	def __init__(self, heads, query_size, feature_size, batch_size, embedding_size, name = "Part_A"):
 		super().__init__(name = name)
