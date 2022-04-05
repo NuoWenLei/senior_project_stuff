@@ -1,4 +1,4 @@
-import json, tensorflow as tf, pandas as pd, numpy as np
+import json, pandas as pd, numpy as np, tensorflow as tf
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
