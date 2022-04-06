@@ -107,7 +107,7 @@ class Part_A(tf.keras.models.Model):
 		# PERHAPS ADD INPUT AND FORGET GATE?
 		# CHECK META-OPTIMIZER TO SEE AT WHAT STAGE THE GATES ARE APPLIED
 
-		new_c, new_f, new_i = self.meta_lstm([expanded_paraphrase, expanded_weights, expanded_biases], hidden_states[1])
+		new_c, new_f, new_i = self.meta_lstm((self_attention, [expanded_paraphrase, expanded_weights, expanded_biases]), hidden_states[1])
 		# previous is previous embeddings
 		# new is self attention
 
