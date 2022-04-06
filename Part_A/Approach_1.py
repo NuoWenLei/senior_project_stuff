@@ -94,13 +94,15 @@ class Part_A(tf.keras.models.Model):
 			embed_c = tf.zeros((self.embedding_size, 1))
 			hidden_states = [(h, c), (f, i, embed_c)]
 
-		_, (hidden_x, cell_x) = self.embed_summarizer(tf.reshape(self_attention, (-1, self.embedding_size)), hidden_states[0]) # [:, :, tf.newaxis, ...]
+		_, (hidden_x, cell_x) = self.embed_summarizer(tf.reshape(self_attention, (-1, self.embedding_size)), hidden_states[0])
 
-		paraphrased_embed = tf.reshape(hidden_x, (self.batch_size, self.feature_size, -1))
+		paraphrased_embed = tf.reshape(hidden_x, (self.batch_size, self.feature_size, -1))[:, :, tf.newaxis, ...]
 
 		expanded_paraphrase = tf.repeat(paraphrased_embed, self.d_model, axis = -2)
 
-		expanded_weights = tf.repeat(weights[..., tf.newaxis], self.d_model, axis = -1)[..., tf.newaxis]
+		repeated_weights = tf.repeat(weights[..., tf.newaxis], self.d_model, axis = -1)
+
+		expanded_weights = tf.reshape(repeated_weights, (self.batch_size, self.feature_size, self.embedding_size, 1))
 
 		expanded_biases = tf.reshape(tf.repeat(biases, self.d_model * self.feature_size, axis = -1), (self.batch_size, self.feature_size, self.d_model))[..., tf.newaxis]
 
