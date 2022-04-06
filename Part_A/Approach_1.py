@@ -88,13 +88,13 @@ class Part_A(tf.keras.models.Model):
 
 		if hidden_states is None:
 			h = tf.zeros((self.batch_size * self.feature_size, self.embedding_size), dtype = tf.float32)
-			c = tf.zeros((self.batch_size * self.feature_size, self.embedding_size,), dtype = tf.float32)
+			c = tf.zeros((self.batch_size * self.feature_size, self.embedding_size), dtype = tf.float32)
 			f = tf.zeros((self.batch_size, self.feature_size, self.embedding_size, 1))
 			i = tf.zeros((self.batch_size, self.feature_size, self.embedding_size, 1))
 			embed_c = tf.zeros((self.embedding_size, 1))
 			hidden_states = [(h, c), (f, i, embed_c)]
 
-		_, (hidden_x, cell_x) = self.embed_summarizer(tf.reshape(self_attention, (-1, self.embedding_size)), hidden_states[0])[:, :, tf.newaxis, ...]
+		_, (hidden_x, cell_x) = self.embed_summarizer(tf.reshape(self_attention, (-1, self.embedding_size)), hidden_states[0]) # [:, :, tf.newaxis, ...]
 
 		paraphrased_embed = tf.reshape(hidden_x, (self.batch_size, self.feature_size, -1))
 
