@@ -82,7 +82,7 @@ class Part_A(tf.keras.models.Model):
 
 		embeds *= tf.math.sqrt(tf.cast(self.d_model, tf.float32)) # shape: (batch_size, feature_size, d_model)
 
-		self_attention_embeds = self.mha_1(embeds) # shape: (batch_size, feature_size, d_model)
+		self_attention_embeds = self.mha_1(embeds, embeds) # shape: (batch_size, feature_size, d_model)
 
 		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
 
