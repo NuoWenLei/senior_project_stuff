@@ -21,6 +21,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 
 	for e in range(params["META_EPOCHS"]):
 		print(f"On Epoch {e}")
+		epoch_maes = []
 		for s in tqdm(range(params["META_STEPS"])):
 			batch = next(generator)
 			feature_embeds = np.array([average_embed(w, embed_mat, vocab_to_number) for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
@@ -28,7 +29,9 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
-			train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
+			mae_metric = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
+		
+		print(f"Epoch Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
 
 def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
 	# TODO: Train base learner and meta interpreter and calculate
@@ -39,11 +42,17 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 
 	train_generator = create_flow(np.float32(X_train), np.float32(y_train), params["BATCH_SIZE"])
 
+	mae_metrics = []
+
 	for ep in range(params["LEARNER_EPOCHS"]):
 		for st in range(params["LEARNER_STEPS"]):
 			train_batch = next(train_generator)
-			hs = train_step(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, train_batch, params, prev_state = hidden_states[-1])
+			hs, mae = train_step(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, train_batch, params, prev_state = hidden_states[-1])
 			hidden_states.append(hs)
+			mae_metrics.append(mae)
+	
+	return float(sum(mae_metrics)) / len(mae_metrics)
+
 
 
 def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params, prev_state = None):
@@ -67,6 +76,8 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 
 		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
+		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
+
 		learner_grads = learner_tape.gradient(learner_mse_loss, base_learner.trainable_variables)
 
 		base_optimizer.apply_gradients(zip(learner_grads, base_learner.trainable_variables))
@@ -75,7 +86,14 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 
-	return hidden_state
+	return hidden_state, interpreter_mae_loss
+
+def print_epoch_state(es, epoch_num):
+	general_stats = []
+	for ep in es:
+		mae = np.mean(np.abs((ep[0] - ep[1]).numpy()))
+		mse = ep[2].numpy()
+
 
 
 
