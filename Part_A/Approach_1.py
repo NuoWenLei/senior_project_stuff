@@ -18,8 +18,8 @@ class MetaLSTMCell(tf.keras.layers.Layer):
 		self.uniform_initializer_bI = tf.random_uniform_initializer(minval = -5., maxval = -4.)
 		self.uniform_initializer_bF = tf.random_uniform_initializer(minval = 4., maxval = 5.)
 
-		self.W_i = tf.Variable(self.weight_initializer((self.hidden_size + 3, 1)))
-		self.W_f = tf.Variable(self.weight_initializer((self.hidden_size + 3, 1)))
+		self.W_i = tf.Variable(self.weight_initializer((self.hidden_size + 4, 1)))
+		self.W_f = tf.Variable(self.weight_initializer((self.hidden_size + 4, 1)))
 
 		self.b_i = tf.Variable(self.uniform_initializer_bI((1, 1)))
 		self.b_f= tf.Variable(self.uniform_initializer_bF((1, 1)))
