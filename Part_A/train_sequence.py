@@ -30,6 +30,8 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			base_optimizer = tf.keras.optimizers.Adam()
 			
 			mae_metric = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
+
+			epoch_maes.append(mae_metric)
 		
 		print(f"Epoch Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
 
