@@ -34,7 +34,7 @@ class MetaLSTMCell(tf.keras.layers.Layer):
 
 		new_i = tf.matmul(tf.concat(x_inputs + [prev_c, prev_i], axis = -1), self.W_i) + self.b_i
 
-		new_c = (tf.math.sigmoid(new_f) * prev_c) - (tf.math.sigmoid(new_i) * tf.reshape(new_self_attention, (-1, 1)))
+		new_c = (tf.math.sigmoid(new_f) * prev_c) - (tf.math.sigmoid(new_i) * new_self_attention)
 
 		return new_c, new_f, new_i
 
