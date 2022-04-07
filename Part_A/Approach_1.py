@@ -84,7 +84,7 @@ class Part_A(tf.keras.models.Model):
 
 		self_attention_embeds = self.mha_1(embeds, embeds) # shape: (batch_size, feature_size, d_model)
 
-		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
+		self_attention = self.norm(self_attention_embeds + embeds)[..., tf.newaxis] # shape: (batch_size, feature_size, d_model)
 
 		if hidden_states is None:
 			h = tf.zeros((self.batch_size * self.feature_size, self.embedding_size), dtype = tf.float32)
@@ -113,7 +113,7 @@ class Part_A(tf.keras.models.Model):
 		# previous is previous embeddings
 		# new is self attention
 
-		sim_res = self.final_similarity_predictor(new_c)
+		sim_res = self.final_similarity_predictor(tf.reshape(new_c, (self.batch_size, self.feature_size, self.embedding_size)))
 
 		return sim_res, [(hidden_x, cell_x), (new_f, new_i, new_c)]
 
