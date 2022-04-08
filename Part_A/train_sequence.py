@@ -15,15 +15,15 @@ def train_sequence(path_to_params):
 	vocab, embed_mat, vocab_to_number = load_embed_and_dictionary(params["VOCAB_PATH"], params["EMBED_PATH"])
 	part_a = Part_A(params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"], params["BATCH_SIZE"], params["D_MODEL"])
 	interpreter_optimizer = tf.keras.optimizers.Adam()
-	new_hs = meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params)
+	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params)
 
-	norm_matrix =  get_norm_matrix(embed_mat)
+	# norm_matrix =  get_norm_matrix(embed_mat)
 
-	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, norm_matrix)
+	# cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, norm_matrix)
 
-	part_a.set_hidden_state(new_hs)
+	# part_a.set_hidden_state(new_hs)
 
-	return part_a, cos_sim_algo
+	# return part_a, cos_sim_algo
 
 def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params):
 
