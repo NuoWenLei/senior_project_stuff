@@ -1,4 +1,4 @@
-import tensorflow as tf
+from train_sequence import tf
 import numpy as np
 
 class Cosine_Similarity_Algorithmic_Search():

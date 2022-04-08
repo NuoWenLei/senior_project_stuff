@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from train_sequence import tf, train_test_split, MinMaxScaler
+from Cosine_Similarity_Algorithmic_Search import Cosine_Similarity_Algorithmic_Search
 import json
 # from sklearn.model_selection import 
 # from sklearn.preprocessing import 
@@ -71,6 +72,9 @@ def load_embed_and_dictionary(path_to_words, path_to_embeds):
 	vocab_to_number = dict((w, i) for i, w in enumerate(vocab))
 	
 	return vocab, embed_mat, vocab_to_number
+
+def get_norm_matrix(wine_embed):
+	return wine_embed / np.sqrt((wine_embed ** 2).sum(axis = -1))[..., np.newaxis]
 
 def cosine_similarity(x, y):
 	x_norm = tf.norm(x, axis = -1)
