@@ -65,23 +65,13 @@ class Part_A(tf.keras.models.Model):
 
 		self.meta_lstm = MetaLSTMCell(self.hidden_size, self.feature_size)
 
-		self.state_set = False
-
-		self.hs = None
-
 		self.prev_embeds = []
 		self.prev_I = []
 		self.prev_F = []
 
 		# self.mha_2 = MultiHeadAttention(num_heads=heads, key_dim=query_size)
-
-	def set_hidden_state(self, hs):
-		self.state_set = True
-		self.hs = hs
 	
 	def call(self, inputs, hidden_states = None):
-		if self.state_set:
-			hidden_states = self.hs
 		embeds, weights, biases = inputs["embeds"], inputs["weights"], inputs["biases"]
 
 		# Embeds shape: (batch_size, feature_size, d_model)
