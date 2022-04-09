@@ -56,9 +56,11 @@ class Part_A(tf.keras.models.Model):
 
 		self_attention_embeds = self.mha_1(embeds, embeds) # shape: (batch_size, feature_size, d_model)
 
-		self_attention = self.norm(self_attention_embeds + embeds)[..., tf.newaxis] # shape: (batch_size, feature_size, d_model)
+		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
 
 		paraphrased_embed = self.embed_summarizer(self_attention)[:, :, tf.newaxis, ...]
+
+		expanded_self_attention = self_attention[..., tf.newaxis]
 
 		expanded_paraphrase = tf.repeat(paraphrased_embed, self.d_model, axis = -2)
 
@@ -68,7 +70,7 @@ class Part_A(tf.keras.models.Model):
 
 		expanded_biases = tf.reshape(tf.repeat(biases, self.d_model * self.feature_size, axis = -1), (self.batch_size, self.feature_size, self.d_model))[..., tf.newaxis]
 
-		new_embeds = self.concat_inputs_and_apply_w_and_b([self_attention, expanded_paraphrase, expanded_weights, expanded_biases])
+		new_embeds = self.concat_inputs_and_apply_w_and_b([expanded_self_attention, expanded_paraphrase, expanded_weights, expanded_biases])
 
 		sim_res = self.final_similarity_predictor(tf.reshape(new_embeds, (self.batch_size, self.feature_size, self.embedding_size)))
 

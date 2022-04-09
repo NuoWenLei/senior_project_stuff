@@ -84,7 +84,7 @@ class Part_A(tf.keras.models.Model):
 
 		self_attention_embeds = self.mha_1(embeds, embeds) # shape: (batch_size, feature_size, d_model)
 
-		self_attention = self.norm(self_attention_embeds + embeds)[..., tf.newaxis] # shape: (batch_size, feature_size, d_model)
+		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
 
 		if hidden_states is None:
 			h = tf.zeros((self.batch_size * self.feature_size, self.embedding_size), dtype = tf.float32)
@@ -95,6 +95,8 @@ class Part_A(tf.keras.models.Model):
 			hidden_states = [(h, c), (f, i, embed_c)]
 
 		_, (hidden_x, cell_x) = self.embed_summarizer(tf.reshape(self_attention, (-1, self.embedding_size)), hidden_states[0])
+
+		expanded_self_attention = self_attention[..., tf.newaxis]
 
 		paraphrased_embed = tf.reshape(hidden_x, (self.batch_size, self.feature_size, -1))[:, :, tf.newaxis, ...]
 
@@ -109,7 +111,7 @@ class Part_A(tf.keras.models.Model):
 		# PERHAPS ADD INPUT AND FORGET GATE?
 		# CHECK META-OPTIMIZER TO SEE AT WHAT STAGE THE GATES ARE APPLIED
 
-		new_c, new_f, new_i = self.meta_lstm((self_attention, [expanded_paraphrase, expanded_weights, expanded_biases]), hidden_states[1])
+		new_c, new_f, new_i = self.meta_lstm((expanded_self_attention, [expanded_paraphrase, expanded_weights, expanded_biases]), hidden_states[1])
 		# previous is previous embeddings
 		# new is self attention
 
