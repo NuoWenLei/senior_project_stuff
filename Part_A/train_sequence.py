@@ -90,9 +90,7 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 
 		base_optimizer.apply_gradients(zip(learner_grads, base_learner.trainable_variables))
 
-		# interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
-
-		interpreter_grads = meta_tape.gradient(learner_mse_loss, meta_interpreter_part_a.trainable_variables)
+		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 

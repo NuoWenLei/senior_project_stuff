@@ -1,4 +1,3 @@
-from distutils.command.install_egg_info import to_filename
 from train_sequence import tf
 from helper_functions import *
 from base_learner import *
