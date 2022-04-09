@@ -32,7 +32,7 @@ class Part_A(tf.keras.models.Model):
 		self.weight_initializer = tf.random_uniform_initializer(minval = -.1, maxval = .1)
 		self.bias_initializer = tf.random_uniform_initializer(minval = -0.1, maxval = 0.1)
 
-		self.W_pred = tf.Variable(self.weight_initializer((self.hidden_size + 3)))
+		self.W_pred = tf.Variable(self.weight_initializer((self.hidden_size + 3, 1)))
 		self.b_pred = tf.Variable(self.bias_initializer((1,)))
 
 		# self.mha_2 = MultiHeadAttention(num_heads=heads, key_dim=query_size)
