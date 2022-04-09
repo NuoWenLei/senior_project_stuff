@@ -7,13 +7,13 @@ class Cosine_Similarity_Algorithmic_Search():
 		self.vocab = vocab
 		self.norm_embed = normed_matrix
 
-	def call(self, words, cosines):
+	def __call__(self, feature_embeds, cosines):
 
-		w = self.norm_embed[words] # shape: (word_size, embed_size)
+		w = np.squeeze((feature_embeds / np.sqrt((feature_embeds ** 2).sum(axis = -1))[..., np.newaxis]))
 
 		sims = np.einsum("ik,jk->ijk", self.norm_embed, w).sum(axis = -1)
 
-		most_similar_word = np.argmin(np.math.pow(cosines - sims, 2).sum(axis = -1))
+		most_similar_word = np.argmin(np.square(cosines - sims).sum(axis = -1))
 
 		return most_similar_word
 

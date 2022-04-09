@@ -28,14 +28,13 @@ from base_learner import *
 
 class Interpreter_Callback(tf.keras.callbacks.Callback):
 	
-	def __init__(self, part_a, algo, neuron_number, feature_embeds, vocab_idx, params, name = "interpreter_callback"):
-		super().__init__(name = name)
+	def __init__(self, part_a, algo, neuron_number, feature_embeds):
+		super().__init__()
 		self.part_a = part_a
 		self.algo = algo
 		self.hidden_states = [None]
-		self.neuron_numer = neuron_number
+		self.neuron_number = neuron_number
 		self.feature_embeds = feature_embeds
-		self.vocab_idx = vocab_idx
 		self.interpreter_output_idxs = []
 		self.interpreter_output_words = []
 
@@ -51,7 +50,7 @@ class Interpreter_Callback(tf.keras.callbacks.Callback):
 
 		interpreter_outputs, hs = self.part_a(interpreter_inputs, self.hidden_states[-1])
 
-		most_similar_idx = self.algo(self.vocab_idx, tf.squeeze(interpreter_outputs))
+		most_similar_idx = self.algo(self.feature_embeds, tf.squeeze(interpreter_outputs))
 
 		self.hidden_states.append(hs)
 
