@@ -4,7 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from helper_functions import *
 from base_learner import *
-from Approach_1 import *
+# from Approach_1 import *
+from Approach_2 import *
 
 
 
@@ -13,7 +14,7 @@ def train_sequence(path_to_params):
 		params = json.load(params_json)
 	dataset_generator = load_dataset_generator(params["DATA_PATH"])
 	vocab, embed_mat, vocab_to_number = load_embed_and_dictionary(params["VOCAB_PATH"], params["EMBED_PATH"])
-	part_a = Part_A(params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"], params["BATCH_SIZE"], params["D_MODEL"])
+	part_a = Part_A(params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"], params["BATCH_SIZE"], params["D_MODEL"], params["HIDDEN_SIZE"])
 	interpreter_optimizer = tf.keras.optimizers.Adam()
 	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params)
 
