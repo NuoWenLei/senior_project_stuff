@@ -62,7 +62,6 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 
 
 def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params):
-	# TODO: Train base learner and meta interpreter and calculate 
 
 	with tf.GradientTape() as learner_tape, tf.GradientTape() as meta_tape:
 
@@ -81,6 +80,8 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
 
 		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
+
+		# TODO: Adjust Train Sequence to only train interpreter once every dataset
 
 		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
 

@@ -62,12 +62,22 @@ def create_flow(X, y, batch_size, mode = "train"):
 			i += batch_size
 			yield X[i-batch_size:i], y[i-batch_size:i]
 
+def clean_vocab_embed(vocab, embed_mat):
+	condition = (embed_mat.sum(axis = -1) == 0.0)
+
+	clean_embed = embed_mat[~condition]
+	clean_words = np.array(vocab)[~condition]
+
+	return clean_words, clean_embed
+
 def load_embed_and_dictionary(path_to_words, path_to_embeds):
 	with open(path_to_words, "r") as word_path:
 		vocab = json.load(word_path)
 	
 	with open(path_to_embeds, "rb") as embed_path:
 		embed_mat = np.load(embed_path)
+
+	vocab, embed_mat = clean_vocab_embed(vocab, embed_mat)
 
 	vocab_to_number = dict((w, i) for i, w in enumerate(vocab))
 	

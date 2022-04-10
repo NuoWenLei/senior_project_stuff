@@ -32,7 +32,7 @@ class Part_A(tf.keras.models.Model):
 		self.weight_initializer = tf.random_uniform_initializer(minval = -.1, maxval = .1)
 		self.bias_initializer = tf.random_uniform_initializer(minval = -0.1, maxval = 0.1)
 
-		self.W_pred = tf.Variable(self.weight_initializer((self.hidden_size + self.feature_size + 2, 1)))
+		self.W_pred = tf.Variable(self.weight_initializer((self.embedding_size + self.feature_size + 1, 1)))
 		self.b_pred = tf.Variable(self.bias_initializer((1,)))
 
 		# self.mha_2 = MultiHeadAttention(num_heads=heads, key_dim=query_size)
@@ -60,23 +60,15 @@ class Part_A(tf.keras.models.Model):
 
 		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
 
-		paraphrased_embed = self.embed_summarizer(self_attention)[:, :, tf.newaxis, ...]
+		repeated_weights = tf.repeat(weights[tf.newaxis, ...], self.feature_size, axis = -1)
 
-		expanded_self_attention = self_attention[..., tf.newaxis]
+		expanded_weights = tf.reshape(repeated_weights, (self.batch_size, self.feature_size, -1))
 
-		expanded_paraphrase = tf.repeat(paraphrased_embed, self.d_model, axis = -2)
+		expanded_biases = tf.reshape(tf.repeat(biases, self.feature_size, axis = -1), (self.batch_size, self.feature_size))[..., tf.newaxis]
 
-		repeated_weights = tf.repeat(weights[tf.newaxis, ...], self.d_model * self.feature_size, axis = -1)
+		new_embeds = self.concat_inputs_and_apply_w_and_b([self_attention, expanded_weights, expanded_biases])
 
-		expanded_weights = tf.reshape(repeated_weights, (self.batch_size, self.feature_size, self.embedding_size, -1))
-
-		expanded_biases = tf.reshape(tf.repeat(biases, self.d_model * self.feature_size, axis = -1), (self.batch_size, self.feature_size, self.d_model))[..., tf.newaxis]
-
-		new_embeds = self.concat_inputs_and_apply_w_and_b([expanded_self_attention, expanded_paraphrase, expanded_weights, expanded_biases])
-
-		sim_res = self.final_similarity_predictor(tf.reshape(new_embeds, (self.batch_size, self.feature_size, self.embedding_size)))
-
-		return sim_res
+		return tf.sigmoid(new_embeds)
 
 
 
