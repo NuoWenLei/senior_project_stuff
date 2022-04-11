@@ -1,0 +1,9 @@
+- update train sequence to record:
+	* base learner MAE
+	* interpreter MAE
+	* absolute sum of base learner weight (to determine if magnitude of base learner weight affects interpreter prediction)
+
+- create approach 6:
+	* individual processing of weights + biases
+	* concatenate with embedding
+	* perhaps use cos sim between feature embeds
