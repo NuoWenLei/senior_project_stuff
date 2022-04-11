@@ -74,13 +74,13 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
 
-		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
-
-		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
-
 		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
 		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
+
+		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
+
+		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 
 	return interpreter_mae_loss
 
