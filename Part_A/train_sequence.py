@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 from helper_functions import *
 from base_learner import *
 # from Approach_1 import *
-from Approach_2 import *
+from Approach_5 import *
 
 
 
@@ -18,11 +18,15 @@ def train_sequence(path_to_params):
 	interpreter_optimizer = tf.keras.optimizers.Adam()
 	norm_matrix =  get_norm_matrix(embed_mat)
 	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, norm_matrix)
-	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, cos_sim_algo, params)
+	logs = meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, cos_sim_algo, params)
 
-	return part_a, cos_sim_algo
+	return part_a, cos_sim_algo, logs
 
 def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, algo, params):
+
+	all_meta_mae = []
+	all_learner_mae = []
+	all_learner_w_mag = []
 
 	for e in range(params["META_EPOCHS"]):
 		print(f"On Epoch {e}")
@@ -34,15 +38,25 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
-			train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
+			learner_mae, w_mag = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-			mae_metric, most_similar_idx = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params)
+			meta_mae_metric, most_similar_idx = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params)
 
-			print(f"Epoch {e}, Step {s}: {mae_metric:.3f}, Most Similar Word: {algo.vocab[most_similar_idx]}, Target Word: {batch[2].name}")
+			print(f"Epoch {e}, Step {s}: {meta_mae_metric:.3f}, Most Similar Word: {algo.vocab[most_similar_idx]}, Target Word: {batch[2].name}")
 
-			epoch_maes.append(mae_metric)
+			epoch_maes.append(meta_mae_metric)
+
+			all_learner_mae.append(learner_mae)
+			all_meta_mae.append(meta_mae_metric)
+			all_learner_w_mag.append(w_mag)
 		
 		print(f"Epoch {e} Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
+	
+	return {
+		"learner_mae": all_learner_mae,
+		"meta_mae": all_meta_mae,
+		"learner_weight_magnitude": all_learner_w_mag
+	}
 
 def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
 	# TODO: Train base learner and meta interpreter and calculate
@@ -57,7 +71,8 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 		for st in range(params["LEARNER_STEPS"]):
 			train_batch = next(train_generator)
 			train_step(base_learner, base_optimizer, train_batch, params)
-	test_learner(base_learner, test_generator, params)
+	avg_learner_weight_mag = learner_weight_magnitude(base_learner, params)
+	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag
 
 def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params):
 
@@ -106,6 +121,8 @@ def test_learner(base_learner, test_generator, params):
 		mae_losses.append(learner_mae_loss)
 
 	print(f"Learner Test Average MAE: {float(sum(mae_losses)) / float(len(mae_losses)):.3f}")
+
+	return float(sum(mae_losses)) / float(len(mae_losses))
 
 # IDEA FOR APPROACH 2:
 # USE GRADIENT IN META LSTM CELL

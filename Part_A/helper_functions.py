@@ -96,3 +96,6 @@ def average_embed(words_string, embed_mat, dictionary):
 	words = words_string.split(" ")
 
 	return np.mean(np.array([embed_mat[dictionary[w]] for w in words]), axis = 0)
+
+def learner_weight_magnitude(learner, params):
+	return tf.reduce_sum(tf.abs(learner.layers[0].weights[0])).numpy() / float(params["FEATURE_SIZE"])
