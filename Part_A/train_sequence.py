@@ -16,15 +16,13 @@ def train_sequence(path_to_params):
 	vocab, embed_mat, vocab_to_number = load_embed_and_dictionary(params["VOCAB_PATH"], params["EMBED_PATH"])
 	part_a = Part_A(params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"], params["BATCH_SIZE"], params["D_MODEL"], params["HIDDEN_SIZE"])
 	interpreter_optimizer = tf.keras.optimizers.Adam()
-	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params)
-
 	norm_matrix =  get_norm_matrix(embed_mat)
-
 	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, norm_matrix)
+	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, algo, params)
 
 	return part_a, cos_sim_algo
 
-def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, params):
+def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, algo, params):
 
 	for e in range(params["META_EPOCHS"]):
 		print(f"On Epoch {e}")
@@ -36,9 +34,11 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
-			mae_metric = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
+			train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-			print(f"Epoch {e}, Step {s}: {mae_metric:.3f}")
+			mae_metric, most_similar_idx = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params)
+
+			print(f"Epoch {e}, Step {s}: {mae_metric:.3f}, Most Similar Word: {algo.vocab[most_similar_idx]}, Target Word: {batch[2].name}")
 
 			epoch_maes.append(mae_metric)
 		
@@ -56,11 +56,7 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 			train_batch = next(train_generator)
 			train_step(base_learner, base_optimizer, train_batch, params)
 
-	mae = meta_step(base_learner, meta_interpreter, feature_embeds, target_embed, interpreter_optimizer, params)
-	
-	return mae
-
-def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, params):
+def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params):
 
 	with tf.GradientTape() as meta_tape:
 
@@ -74,6 +70,8 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
 
+		most_similar_idx = algo(feature_embeds, tf.squeeze(interpreter_outputs))
+
 		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
 		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
@@ -82,7 +80,7 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 
-	return interpreter_mae_loss
+	return interpreter_mae_loss, most_similar_idx
 
 
 def train_step(base_learner, base_optimizer, inputs, params):
