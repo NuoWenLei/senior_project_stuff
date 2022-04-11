@@ -18,7 +18,7 @@ def train_sequence(path_to_params):
 	interpreter_optimizer = tf.keras.optimizers.Adam()
 	norm_matrix =  get_norm_matrix(embed_mat)
 	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, norm_matrix)
-	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, algo, params)
+	meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, cos_sim_algo, params)
 
 	return part_a, cos_sim_algo
 
@@ -51,10 +51,13 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 
 	train_generator = create_flow(np.float32(X_train), np.float32(y_train), params["BATCH_SIZE"])
 
+	test_generator = create_flow(np.float32(X_test), np.float32(y_test), params["BATCH_SIZE"], mode = "test")
+
 	for ep in range(params["LEARNER_EPOCHS"]):
 		for st in range(params["LEARNER_STEPS"]):
 			train_batch = next(train_generator)
 			train_step(base_learner, base_optimizer, train_batch, params)
+	test_learner(base_learner, test_generator, params)
 
 def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params):
 
@@ -94,6 +97,15 @@ def train_step(base_learner, base_optimizer, inputs, params):
 		learner_grads = learner_tape.gradient(learner_mse_loss, base_learner.trainable_variables)
 
 		base_optimizer.apply_gradients(zip(learner_grads, base_learner.trainable_variables))
+
+def test_learner(base_learner, test_generator, params):
+	mae_losses = []
+	for X, y in test_generator:
+		y_pred = base_learner(X)
+		learner_mae_loss = tf.abs(tf.cast(y, tf.float32) - y_pred).numpy()
+		mae_losses.append(learner_mae_loss)
+
+	print(f"Learner Test Average MAE: {float(sum(mae_losses)) / float(len(mae_losses)):.3f}")
 
 # IDEA FOR APPROACH 2:
 # USE GRADIENT IN META LSTM CELL
