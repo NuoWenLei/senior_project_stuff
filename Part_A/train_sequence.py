@@ -29,7 +29,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 	for e in range(params["META_EPOCHS"]):
 		print(f"On Epoch {e}")
 		epoch_maes = []
-		for s in tqdm(range(params["META_STEPS"])):
+		for s in range(params["META_STEPS"]):
 			batch = next(generator)
 			feature_embeds = np.array([average_embed(w, embed_mat, vocab_to_number) for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
 			target_embed = average_embed(batch[2].name, embed_mat, vocab_to_number)[tf.newaxis, ...]
@@ -38,9 +38,11 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			
 			mae_metric = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
+			print(f"Epoch {e}, Step {s}: {mae_metric:.3f}")
+
 			epoch_maes.append(mae_metric)
 		
-		print(f"Epoch Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
+		print(f"Epoch {e} Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
 
 def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
 	# TODO: Train base learner and meta interpreter and calculate
@@ -49,25 +51,18 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 
 	train_generator = create_flow(np.float32(X_train), np.float32(y_train), params["BATCH_SIZE"])
 
-	mae_metrics = []
-
 	for ep in range(params["LEARNER_EPOCHS"]):
 		for st in range(params["LEARNER_STEPS"]):
 			train_batch = next(train_generator)
-			mae = train_step(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, train_batch, params)
-			mae_metrics.append(mae)
+			train_step(base_learner, base_optimizer, train_batch, params)
+
+	mae = meta_step(base_learner, meta_interpreter, feature_embeds, target_embed, interpreter_optimizer, params)
 	
-	return float(sum(mae_metrics)) / len(mae_metrics)
+	return mae
 
+def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, params):
 
-
-def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, inputs, params):
-
-	with tf.GradientTape() as learner_tape, tf.GradientTape() as meta_tape:
-
-				
-		y_pred = base_learner(inputs[0])
-		learner_mse_loss = tf.square(tf.cast(inputs[0], tf.float32) - y_pred)
+	with tf.GradientTape() as meta_tape:
 
 		interpreter_inputs = {
 			"embeds": feature_embeds,
@@ -76,27 +71,31 @@ def train_step(base_learner, meta_interpreter_part_a, feature_embeds, target_emb
 		}
 
 		interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
-	
+
 		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
-
-		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
-
-		# TODO: Adjust Train Sequence to only train interpreter once every dataset
-
-		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
-
-		learner_grads = learner_tape.gradient(learner_mse_loss, base_learner.trainable_variables)
-
-		base_optimizer.apply_gradients(zip(learner_grads, base_learner.trainable_variables))
 
 		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 
+		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
+
+		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
+
 	return interpreter_mae_loss
 
 
+def train_step(base_learner, base_optimizer, inputs, params):
 
+	with tf.GradientTape() as learner_tape:
+
+		y_pred = base_learner(inputs[0])
+
+		learner_mse_loss = tf.square(tf.cast(inputs[0], tf.float32) - y_pred)
+
+		learner_grads = learner_tape.gradient(learner_mse_loss, base_learner.trainable_variables)
+
+		base_optimizer.apply_gradients(zip(learner_grads, base_learner.trainable_variables))
 
 # IDEA FOR APPROACH 2:
 # USE GRADIENT IN META LSTM CELL
