@@ -21,6 +21,9 @@ CHECKED - create approach 6:
 - ideas:
 	* new loss function that uses difference between predicted embedding and target word embedding
 	* callback finds most similar words for every neuron as option (neuron_number = -1)
+	* remove words with high cosine similarity with all words
+		- by calculating and ordering by summed cosine similarity of every word with all other words
+		- and deleting top few
 
 
 
