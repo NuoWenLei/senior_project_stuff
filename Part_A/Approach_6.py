@@ -25,9 +25,11 @@ class Part_A(tf.keras.models.Model):
 
 		self.embedding_size = embedding_size
 
+		self.weights_batch_norm = tf.keras.layers.BatchNormalization(axis = 0)
+
 		# self.embed_summarizer = tf.keras.layers.Dense(self.hidden_size, activation = "relu")
 
-		self.final_similarity_predictor = tf.keras.layers.Dense(1, activation = "sigmoid")
+		self.final_similarity_predictor = tf.keras.layers.Dense(1, activation = "linear")
 
 		# self.weight_initializer = tf.random_uniform_initializer(minval = -.1, maxval = .1)
 		# self.bias_initializer = tf.random_uniform_initializer(minval = -0.1, maxval = 0.1)
@@ -35,9 +37,13 @@ class Part_A(tf.keras.models.Model):
 		# self.W_pred = tf.Variable(self.weight_initializer((self.embedding_size + self.feature_size + 1, 1)))
 		# self.b_pred = tf.Variable(self.bias_initializer((1,)))
 
-		self.embed_summarizer = tf.keras.layers.Dense(self.hidden_size, activation = "relu")
+		self.emed_predict_layers = [
+			tf.keras.layers.Dense(self.hidden_size, activation = "relu"),
+			tf.keras.layers.Dense(self.hidden_size, activation = "relu")
+		]
 
 		self.sim_predict_layers = [
+			tf.keras.layers.Dense(self.hidden_size, activation = "relu"),
 			tf.keras.layers.Dense(self.hidden_size, activation = "relu")
 		]
 
@@ -58,6 +64,12 @@ class Part_A(tf.keras.models.Model):
 			new_embeds = l(new_embeds)
 		
 		return new_embeds
+
+	def apply_embed_dense_layers(self, embeds):
+		for l in self.emed_predict_layers:
+			embeds = l(embeds)
+		
+		return embeds
 	
 	def call(self, inputs):
 		embeds, raw_weights, biases = inputs["embeds"], inputs["weights"], inputs["biases"]
@@ -70,17 +82,13 @@ class Part_A(tf.keras.models.Model):
 
 		# embeds *= tf.math.sqrt(tf.cast(self.d_model, tf.float32)) # shape: (batch_size, feature_size, d_model)
 
-		weights = raw_weights / tf.sqrt(tf.reduce_sum(raw_weights ** 2))
+		weights = self.weights_batch_norm(raw_weights)
 
 		# self_attention_embeds = self.mha_1(embeds, embeds) # shape: (batch_size, feature_size, d_model)
 
 		# self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
 
-		processed_embeds = self.embed_summarizer(embeds)
-
-		print(tf.shape(embeds))
-
-		print(tf.shape(processed_embeds))
+		processed_embeds = self.apply_embed_dense_layers(embeds)
 
 		# repeated_weights = tf.repeat(weights[tf.newaxis, ...], self.feature_size, axis = -1)
 
@@ -98,9 +106,9 @@ class Part_A(tf.keras.models.Model):
 
 		cos_preds = self.final_similarity_predictor(combined_embeds)
 
-		return cos_preds
+		# return cos_preds
 
-		# return tf.clip_by_value(cos_preds, 0.001, 0.999)
+		return tf.clip_by_value(cos_preds, 0.001, 0.999)
 
 		
 

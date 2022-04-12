@@ -7,6 +7,7 @@ CHECKED - update train sequence to record:
 	* Linear and Dense Combination (Wide and Deep Model)
 		* see https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/estimator/DNNLinearCombinedRegressor
 		* see https://arxiv.org/pdf/1606.07792.pdf
-	* individual processing of weights + biases
-	* concatenate with embedding
+	DONE * individual processing of weights + biases
+	DONE * concatenate with embedding
 	* perhaps use cos sim between feature embeds
+	DONE * use batch norm

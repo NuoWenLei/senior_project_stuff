@@ -27,6 +27,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 	all_meta_mae = []
 	all_learner_mae = []
 	all_learner_w_mag = []
+	all_learner_b_mag = []
 
 	for e in range(params["META_EPOCHS"]):
 		print(f"On Epoch {e}")
@@ -38,7 +39,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
-			learner_mae, w_mag = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
+			learner_mae, w_mag, b_mag = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
 			meta_mae_metric, most_similar_idx = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params)
 
@@ -49,13 +50,15 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			all_learner_mae.append(learner_mae)
 			all_meta_mae.append(meta_mae_metric)
 			all_learner_w_mag.append(w_mag)
+			all_learner_b_mag.append(b_mag)
 		
 		print(f"Epoch {e} Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
 	
 	return {
 		"learner_mae": all_learner_mae,
 		"meta_mae": all_meta_mae,
-		"learner_weight_magnitude": all_learner_w_mag
+		"learner_weight_magnitude": all_learner_w_mag,
+		"learner_bias_magnitude": all_learner_b_mag
 	}
 
 def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
@@ -72,7 +75,7 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 			train_batch = next(train_generator)
 			train_step(base_learner, base_optimizer, train_batch, params)
 	avg_learner_weight_mag = learner_weight_magnitude(base_learner, params)
-	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag
+	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag, base_learner.layer[0].weights[1].numpy()
 
 def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params):
 
