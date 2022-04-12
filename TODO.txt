@@ -13,6 +13,10 @@ CHECKED - create approach 6:
 	* DONE use batch norm
 		* RESULT: Doesn't work because it doesn't globally scale weights
 
+- create approach 7:
+	* predict angle and use cosine to determine
+	* domain of angles is 0 to 2pi
+
 - update train sequence to display:
 	* top 3 most similar words (UPDATE ALGO)
 	* similarity between most similar word and target word
