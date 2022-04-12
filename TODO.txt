@@ -17,19 +17,19 @@ CHECKED - create approach 7:
 	* predict angle and use cosine to determine
 	* domain of cosine is 0 to pi
 
-- Try cosine angle predict with other approaches
+- (Continue from Approach 4) Try cosine angle predict with other approaches
 
 - update train sequence to display:
 	* DONE top 3 most similar words (UPDATE ALGO)
 	* DONE similarity between most similar word and target word
-	* similarity between predicted embedding and target word embedding
 
 - ideas:
-	* new loss function that uses difference between predicted embedding and target word embedding
-	* callback finds most similar words for every neuron as option (neuron_number = -1)
-	* remove words with high cosine similarity with all words
+	* NEED TEST callback finds most similar words for every neuron as option (neuron_number = -1)
+	* DONE remove words with high cosine similarity with all words
 		- by calculating and ordering by summed cosine similarity of every word with all other words
 		- and deleting top few
 
+- RESULTS:
+	* Currently Approach 3 is performing the best with cosine angle predict
 
 

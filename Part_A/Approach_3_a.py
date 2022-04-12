@@ -25,6 +25,8 @@ class Part_A(tf.keras.models.Model):
 
 		self.embedding_size = embedding_size
 
+		self.attention_dense = tf.keras.layers.Dense(self.hidden_size, activation = "relu")
+
 		# self.embed_summarizer = tf.keras.layers.Dense(self.hidden_size, activation = "relu")
 
 		self.final_similarity_predictor = tf.keras.layers.Dense(1, activation = "linear")
@@ -36,6 +38,7 @@ class Part_A(tf.keras.models.Model):
 		# self.b_pred = tf.Variable(self.bias_initializer((1,)))
 
 		self.sim_predict_layers = [
+			tf.keras.layers.Dense(self.hidden_size, activation = "relu"),
 			tf.keras.layers.Dense(self.hidden_size, activation = "relu")
 		]
 
@@ -74,9 +77,7 @@ class Part_A(tf.keras.models.Model):
 
 		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
 
-		# repeated_weights = tf.repeat(weights[tf.newaxis, ...], self.feature_size, axis = -1)
-
-		# expanded_weights = tf.reshape(repeated_weights, (self.batch_size, self.feature_size, -1))
+		self_attention_weight = self.attention_dense(self_attention)
 		
 		expanded_weights = weights[tf.newaxis, ...]
 
@@ -86,7 +87,7 @@ class Part_A(tf.keras.models.Model):
 
 		# return tf.sigmoid(new_embeds)
 
-		new_embeds = self.concat_inputs_and_apply_dense_layer([self_attention, expanded_weights, expanded_biases])
+		new_embeds = self.concat_inputs_and_apply_dense_layer([self_attention_weight, expanded_weights, expanded_biases])
 
 		cos_preds = self.final_similarity_predictor(new_embeds)
 

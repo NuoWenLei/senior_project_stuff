@@ -27,7 +27,7 @@ class Part_A(tf.keras.models.Model):
 
 		self.embed_summarizer = tf.keras.layers.Dense(self.hidden_size, activation = "relu")
 
-		self.final_similarity_predictor = tf.keras.layers.Dense(1, activation = "sigmoid")
+		self.final_similarity_predictor = tf.keras.layers.Dense(1, activation = "linear")
 
 		self.weight_initializer = tf.random_uniform_initializer(minval = -.1, maxval = .1)
 		self.bias_initializer = tf.random_uniform_initializer(minval = -0.1, maxval = 0.1)

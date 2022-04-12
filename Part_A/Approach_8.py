@@ -110,7 +110,7 @@ class Part_A(tf.keras.models.Model):
 
 		# return cos_preds
 
-		return tf.math.cos(tf.clip_by_value(cos_preds, 0.001, 3.14))
+		return tf.math.cos(cos_preds)
 
 		
 

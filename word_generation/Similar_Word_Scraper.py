@@ -40,16 +40,6 @@ class Similar_Word_Scraper():
 				if (w not in string.punctuation) and (w not in self.stops) and (w not in [word for word,_ in curr_set]) and self.is_adj_or_noun(p) and (w not in queue) and (w not in old_queue):
 					queue.append(w)
 
-			# Same thing as definition but for all lemma names
-			for l in ss.lemma_names():
-
-				wl = l.lower().split("_")
-
-				for w,p in nltk.pos_tag(wl):
-				
-					if (w not in string.punctuation) and (w not in self.stops) and (w not in [word for word,_ in curr_set]) and self.is_adj_or_noun(p) and (w not in queue) and (w not in old_queue):
-						queue.append(w)
-
 		return queue
 
 
