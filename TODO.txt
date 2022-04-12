@@ -15,7 +15,7 @@ CHECKED - create approach 6:
 
 - create approach 7:
 	* predict angle and use cosine to determine
-	* domain of angles is 0 to 2pi
+	* domain of cosine is 0 to pi
 
 - update train sequence to display:
 	* top 3 most similar words (UPDATE ALGO)
