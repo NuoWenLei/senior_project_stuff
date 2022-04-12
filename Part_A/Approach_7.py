@@ -47,17 +47,14 @@ class Part_A(tf.keras.models.Model):
 			tf.keras.layers.Dense(self.hidden_size, activation = "relu")
 		]
 
+		self.final_pred_layers = [
+			tf.keras.layers.Dense(self.hidden_size, activation = "relu"),
+			tf.keras.layers.Dense(self.hidden_size, activation = "relu"),
+		]
+
 		# self.mha_2 = MultiHeadAttention(num_heads=heads, key_dim=query_size)
 
-	def concat_inputs_and_apply_w_and_b(self, x_inputs):
-
-		new_embeds = tf.matmul(tf.concat(x_inputs, axis = -1), self.W_pred) + self.b_pred
-
-		return new_embeds
-
-	def concat_inputs_and_apply_dense_layer(self, x_inputs):
-
-		new_embeds = tf.concat(x_inputs, axis = -1)
+	def sparse_weights_apply_dense_layer(self, new_embeds):
 
 		for l in self.sim_predict_layers:
 
@@ -96,15 +93,18 @@ class Part_A(tf.keras.models.Model):
 
 		# expanded_weights = tf.reshape(repeated_weights, (self.batch_size, self.feature_size, -1))
 
-		expanded_biases = tf.reshape(tf.repeat(biases, self.feature_size, axis = -1), (self.batch_size, self.feature_size))[..., tf.newaxis]
+		# expanded_biases = tf.reshape(tf.repeat(biases, self.feature_size, axis = -1), (self.batch_size, self.feature_size))[..., tf.newaxis]
 
 		# new_embeds = self.concat_inputs_and_apply_w_and_b([self_attention, expanded_weights, expanded_biases])
 
 		# return tf.sigmoid(new_embeds)
 
-		new_embeds = self.concat_inputs_and_apply_dense_layer([weights[tf.newaxis, ...], expanded_biases])
+		new_embeds = self.sparse_weights_apply_dense_layer(weights[tf.newaxis, ...])
 
 		combined_embeds = tf.concat([new_embeds, processed_embeds], axis = -1)
+
+		for l in self.final_pred_layers:
+			combined_embeds = l(combined_embeds)
 
 		cos_preds = self.final_similarity_predictor(combined_embeds)
 

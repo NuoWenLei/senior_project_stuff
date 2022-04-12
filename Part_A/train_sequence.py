@@ -28,6 +28,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 	all_learner_mae = []
 	all_learner_w_mag = []
 	all_learner_b_mag = []
+	all_guess_cos_sim = []
 
 	for e in range(params["META_EPOCHS"]):
 		print(f"On Epoch {e}")
@@ -43,7 +44,12 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 
 			meta_mae_metric, most_similar_idx = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params)
 
+			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_idx])[0]
+
+			
+
 			print(f"Epoch {e}, Step {s}: {meta_mae_metric:.3f}, Most Similar Word: {algo.vocab[most_similar_idx]}, Target Word: {batch[2].name}")
+			print(f"Cosine Similarity between most similar word and target embedding: {guess_cos_sim:.3f}")
 
 			epoch_maes.append(meta_mae_metric)
 
@@ -51,6 +57,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			all_meta_mae.append(meta_mae_metric)
 			all_learner_w_mag.append(w_mag)
 			all_learner_b_mag.append(b_mag)
+			all_guess_cos_sim.append(guess_cos_sim)
 		
 		print(f"Epoch {e} Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
 	
@@ -58,8 +65,9 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 		"learner_mae": all_learner_mae,
 		"meta_mae": all_meta_mae,
 		"learner_weight_magnitude": all_learner_w_mag,
-		"learner_bias_magnitude": all_learner_b_mag
-	}
+		"learner_bias_magnitude": all_learner_b_mag,
+		"guess_cos_sim": all_guess_cos_sim
+		}
 
 def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
 	# TODO: Train base learner and meta interpreter and calculate
@@ -75,7 +83,7 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 			train_batch = next(train_generator)
 			train_step(base_learner, base_optimizer, train_batch, params)
 	avg_learner_weight_mag = learner_weight_magnitude(base_learner, params)
-	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag, base_learner.layer[0].weights[1].numpy()
+	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag, base_learner.layers[0].weights[1].numpy()
 
 def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params):
 
@@ -123,7 +131,7 @@ def test_learner(base_learner, test_generator, params):
 		learner_mae_loss = tf.abs(tf.cast(y, tf.float32) - y_pred).numpy()
 		mae_losses.append(learner_mae_loss)
 
-	print(f"Learner Test Average MAE: {float(sum(mae_losses)) / float(len(mae_losses)):.3f}")
+	# print(f"Learner Test Average MAE: {float(sum(mae_losses)) / float(len(mae_losses)):.3f}")
 
 	return float(sum(mae_losses)) / float(len(mae_losses))
 
