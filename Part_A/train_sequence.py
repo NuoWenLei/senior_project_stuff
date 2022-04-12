@@ -42,14 +42,14 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			
 			learner_mae, w_mag, b_mag = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-			meta_mae_metric, most_similar_idx = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params)
+			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, params)
 
-			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_idx])[0]
+			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_idices])
 
-			
-
-			print(f"Epoch {e}, Step {s}: {meta_mae_metric:.3f}, Most Similar Word: {algo.vocab[most_similar_idx]}, Target Word: {batch[2].name}")
-			print(f"Cosine Similarity between most similar word and target embedding: {guess_cos_sim:.3f}")
+			print(f"Epoch {e}, Step {s}: {meta_mae_metric:.3f}, Most Similar Words: {algo.vocab[most_similar_idices]}, Target Word: {batch[2].name}")
+			print(f"Cosine Similarity between most similar word and target embedding: {guess_cos_sim}")
+			print()
+			print()
 
 			epoch_maes.append(meta_mae_metric)
 
@@ -99,7 +99,7 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
 
-		most_similar_idx = algo(feature_embeds, tf.squeeze(interpreter_outputs))
+		most_similar_idices = algo(feature_embeds, tf.squeeze(interpreter_outputs))
 
 		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
@@ -109,7 +109,7 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 
-	return interpreter_mae_loss, most_similar_idx
+	return interpreter_mae_loss, most_similar_idices
 
 
 def train_step(base_learner, base_optimizer, inputs, params):

@@ -13,9 +13,11 @@ class Cosine_Similarity_Algorithmic_Search():
 
 		sims = np.einsum("ik,jk->ijk", self.norm_embed, w).sum(axis = -1)
 
-		most_similar_word = np.argmin(np.square(cosines - sims).sum(axis = -1))
+		most_similar_words = np.argpartition(np.square(cosines - sims).sum(axis = -1), 3)[0:3]
 
-		return most_similar_word
+		return most_similar_words
+
+		
 
 
 

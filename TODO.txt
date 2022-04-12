@@ -13,13 +13,15 @@ CHECKED - create approach 6:
 	* DONE use batch norm
 		* RESULT: Doesn't work because it doesn't globally scale weights
 
-- create approach 7:
+CHECKED - create approach 7:
 	* predict angle and use cosine to determine
 	* domain of cosine is 0 to pi
 
+- Try cosine angle predict with other approaches
+
 - update train sequence to display:
-	* top 3 most similar words (UPDATE ALGO)
-	* similarity between most similar word and target word
+	* DONE top 3 most similar words (UPDATE ALGO)
+	* DONE similarity between most similar word and target word
 	* similarity between predicted embedding and target word embedding
 
 - ideas:
