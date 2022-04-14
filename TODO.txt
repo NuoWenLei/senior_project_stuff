@@ -24,12 +24,16 @@ CHECKED - create approach 7:
 	* DONE similarity between most similar word and target word
 
 - ideas:
-	* NEED TEST callback finds most similar words for every neuron as option (neuron_number = -1)
+	* DONE callback finds most similar words for every neuron as option (neuron_number = -1)
 	* DONE remove words with high cosine similarity with all words
 		- by calculating and ordering by summed cosine similarity of every word with all other words
 		- and deleting top few
+	* DONE try other end functions like sine or tangent etc
+	* new approach takes into account gradient
+	* test model on clustering algorithms
 
 - RESULTS:
 	* Currently Approach 3 is performing the best with cosine angle predict
+	* cosine function is best for finalizing guesses
 
 

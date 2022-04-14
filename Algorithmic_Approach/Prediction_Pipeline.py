@@ -79,9 +79,9 @@ class Interpreter_Callback_2(tf.keras.callbacks.Callback):
 				self.interpreter_output_sims.append([])
 
 	def on_train_batch_end(self, batch, logs = None):
-		w_and_b = self.model.layers[0].weights.numpy()
-		weights = w_and_b[0]
-		bias = w_and_b[1]
+		w_and_b = self.model.layers[0].weights
+		weights = w_and_b[0].numpy()
+		bias = w_and_b[1].numpy()
 		if self.predict_all_neuron:
 			for i in range(bias.shape[0]):
 				w = weights[:, i:i+1]
@@ -101,12 +101,12 @@ class Interpreter_Callback_2(tf.keras.callbacks.Callback):
 
 				self.interpreter_output_sims[i].append(interpreter_outputs)
 
-				self.interpreter_output_sims[i].append(self.algo.vocab[most_similar_idx])
+				self.interpreter_output_words[i].append(self.algo.vocab[most_similar_idx])
 		
 		else:
 
-			w = weights[:, i:i+1]
-			b = bias[i:i+1]
+			w = weights[:, self.neuron_number:self.neuron_number+1]
+			b = bias[self.neuron_number:self.neuron_number+1]
 
 			interpreter_inputs = {
 				"embeds": self.feature_embeds,
