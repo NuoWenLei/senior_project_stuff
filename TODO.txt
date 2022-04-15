@@ -30,6 +30,7 @@ CHECKED - create approach 7:
 		- and deleting top few
 	* DONE try other end functions like sine or tangent etc
 	* new approach takes into account gradient
+	* new approach ONLY uses gradient
 	* test model on clustering algorithms
 
 - RESULTS:
