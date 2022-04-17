@@ -17,7 +17,7 @@ def train_sequence(path_to_params):
 	max_mag_embed = get_max_magnitude(embed_mat)
 	part_a = Part_A(params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"], params["BATCH_SIZE"], params["D_MODEL"], params["HIDDEN_SIZE"], max_mag_embed)
 	interpreter_optimizer = tf.keras.optimizers.Adam()
-	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, embed_mat)
+	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, embed_mat, num_closest = params["NUM_SIMILAR_WORDS"])
 	logs = meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, cos_sim_algo, max_mag_embed, params)
 
 	return part_a, cos_sim_algo, logs
@@ -29,6 +29,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 	all_learner_w_mag = []
 	all_learner_b_mag = []
 	all_guess_cos_sim = []
+	all_max_diff = []
 
 	for e in range(params["META_EPOCHS"]):
 		print(f"On Epoch {e}")
@@ -42,12 +43,16 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			
 			learner_mae, w_mag, b_mag, grads = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, max_mag_embed, params)
+			meta_mae_metric, most_similar_indices, target_indicies = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, max_mag_embed, params)
 
-			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_idices])
+			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_indices])
 
-			print(f"Epoch {e}, Step {s}: {meta_mae_metric:.3f}, Most Similar Words: {algo.vocab[most_similar_idices]}, Target Word: {batch[2].name}")
-			print(f"Cosine Similarity between most similar word and target embedding: {guess_cos_sim}")
+			target_cos_sim = cosine_similarity(target_embed, embed_mat[target_indicies])
+
+			max_sim_diff = np.max(target_cos_sim) - np.max(guess_cos_sim)
+
+			print(f"Epoch {e}, Step {s}: {meta_mae_metric:.3f}, Guess Most Similar Words: {algo.vocab[most_similar_indices]}, Target Most Similar Words: {algo.vocab[target_indicies]}, Target Word: {batch[2].name}")
+			print(f"Cosine Similarity between most similar word/target embedding: {guess_cos_sim}, diff between max guess and max target: {max_sim_diff}")
 			print()
 			print()
 
@@ -58,6 +63,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			all_learner_w_mag.append(w_mag)
 			all_learner_b_mag.append(b_mag)
 			all_guess_cos_sim.append(guess_cos_sim)
+			all_max_diff.append(max_sim_diff)
 		
 		print(f"Epoch {e} Average MAE: {float(sum(epoch_maes)) / len(epoch_maes)}")
 	
@@ -66,7 +72,8 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 		"meta_mae": all_meta_mae,
 		"learner_weight_magnitude": all_learner_w_mag,
 		"learner_bias_magnitude": all_learner_b_mag,
-		"guess_cos_sim": all_guess_cos_sim
+		"guess_cos_sim": all_guess_cos_sim,
+		"max_sim_diff": all_max_diff
 		}
 
 def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
@@ -99,21 +106,21 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
 
-		target_magnitude = tf.math.sqrt(tf.reduce_sum(target_embed ** 2)) / tf.constant(max_mag_embed)
+		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
 
-		interpreter_outputs, interpreter_mag_pred = meta_interpreter_part_a(interpreter_inputs)
+		most_similar_indices = algo(feature_embeds, tf.squeeze(interpreter_outputs))
 
-		most_similar_idices = algo(feature_embeds, tf.squeeze(interpreter_outputs), tf.squeeze(interpreter_mag_pred))
+		target_indices = algo(feature_embeds, tf.squeeze(interpreter_true_values))
 
-		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values)) + tf.square(target_magnitude - interpreter_mag_pred)
+		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
 
-		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values)) + tf.abs(target_magnitude - interpreter_mag_pred)
+		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
 
 		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 
-	return interpreter_mae_loss, most_similar_idices
+	return interpreter_mae_loss, most_similar_indices, target_indices
 
 
 def train_step(base_learner, base_optimizer, inputs, params):

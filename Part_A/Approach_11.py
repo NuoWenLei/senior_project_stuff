@@ -13,6 +13,8 @@ class Part_A(tf.keras.models.Model):
 
 		self.mha_1 = tf.keras.layers.MultiHeadAttention(num_heads=heads, key_dim=query_size, attention_axes = 2)
 
+		# self.mha_1.trainable = False
+
 		self.norm = tf.keras.layers.LayerNormalization()
 
 		self.d_model = heads * query_size
@@ -31,8 +33,6 @@ class Part_A(tf.keras.models.Model):
 
 		self.final_similarity_predictor = tf.keras.layers.Dense(1, activation = "linear")
 
-		self.final_magnitude_predictor = tf.keras.layers.Dense(1, activation = "linear")
-
 		# self.weight_initializer = tf.random_uniform_initializer(minval = -.1, maxval = .1)
 		# self.bias_initializer = tf.random_uniform_initializer(minval = -0.1, maxval = 0.1)
 
@@ -40,11 +40,8 @@ class Part_A(tf.keras.models.Model):
 		# self.b_pred = tf.Variable(self.bias_initializer((1,)))
 
 		self.sim_predict_layers = [
-			tf.keras.layers.Dense(self.hidden_size, activation = "relu")
-		]
-
-		self.mag_predict_layers = [
-			tf.keras.layers.Dense(self.hidden_size, activation = "relu")
+			tf.keras.layers.Dense(self.hidden_size, activation = "relu"),
+			tf.keras.layers.Dropout(0.3)
 		]
 
 		# self.mha_2 = MultiHeadAttention(num_heads=heads, key_dim=query_size)
@@ -59,16 +56,11 @@ class Part_A(tf.keras.models.Model):
 
 		new_sim_embeds = tf.concat(x_inputs, axis = -1)
 
-		new_mag_embeds = tf.concat(x_inputs, axis = -1)
-
 		for l in self.sim_predict_layers:
 
 			new_sim_embeds = l(new_sim_embeds)
-
-		for l in self.mag_predict_layers:
-			new_mag_embeds = l(new_mag_embeds)
 		
-		return new_sim_embeds, new_mag_embeds
+		return new_sim_embeds
 	
 	def call(self, inputs):
 		embeds, raw_weights, biases, raw_weight_gradients, bias_gradients = inputs["embeds"], inputs["weights"], inputs["biases"], inputs["weight_gradients"], inputs["bias_gradients"]
@@ -111,13 +103,13 @@ class Part_A(tf.keras.models.Model):
 
 		# return tf.sigmoid(new_embeds)
 
-		new_sim_embeds, new_mag_embeds = self.concat_inputs_and_apply_dense_layer([self_attention, expanded_weights, expanded_weight_gradients, expanded_biases, expanded_bias_gradients, embed_magnitudes])
+		new_sim_embeds = self.concat_inputs_and_apply_dense_layer([self_attention, expanded_weights, expanded_weight_gradients, expanded_biases, expanded_bias_gradients, embed_magnitudes])
 
 		cos_preds = self.final_similarity_predictor(new_sim_embeds)
 
-		mag_preds = self.final_magnitude_predictor(new_mag_embeds)
+		# mag_preds = self.final_magnitude_predictor(new_mag_embeds)
 
-		return tf.math.cos(cos_preds), tf.clip_by_value(tf.reduce_sum(mag_preds), clip_value_min = -1.0, clip_value_max = 1.0)
+		return tf.math.cos(cos_preds)
 
 		
 
