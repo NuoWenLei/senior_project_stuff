@@ -1,4 +1,5 @@
-from train_sequence import tf, get_norm_matrix
+from train_sequence_approach_9 import tf
+from helper_functions_9 import get_norm_matrix
 import numpy as np
 
 class Cosine_Similarity_Algorithmic_Search():
