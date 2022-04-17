@@ -2,8 +2,6 @@ from train_sequence import tf, np, tqdm
 from helper_functions import *
 from base_learner import *
 
-K = tf.keras.backend
-
 # class Interpreted_Learner_Pipeline():
 
 # 	def __init__(self, part_a, algo, params):
@@ -41,6 +39,8 @@ class Train_Pipeline:
 		self.interpreter_callback = Interpreter_Custom_Callback(self.base_model, self.part_a, self.algo, self.neuron_number, self.feature_embeds, self.num_neurons)
 
 	def fit(self, X, y, batch_size, epochs):
+		X = np.array(X)
+		y = np.array(y)
 		steps = X.shape[0] // batch_size
 		for epoch in range(epochs):
 			print(f"On Epoch {epoch}")

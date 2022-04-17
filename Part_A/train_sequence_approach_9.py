@@ -98,13 +98,15 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
 
-		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
+		target_magnitude = tf.math.sqrt(tf.reduce_sum(target_embed ** 2))
+
+		interpreter_outputs, interpreter_mag_pred = meta_interpreter_part_a(interpreter_inputs)
 
 		most_similar_idices = algo(feature_embeds, tf.squeeze(interpreter_outputs))
 
-		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
+		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values)) + tf.square(target_magnitude - interpreter_mag_pred)
 
-		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
+		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values)) + tf.abs(target_magnitude - interpreter_mag_pred)
 
 		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
 
