@@ -36,12 +36,13 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			batch = next(generator)
 			feature_embeds = np.array([average_embed(w, embed_mat, vocab_to_number) for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
 			target_embed = average_embed(batch[2].name, embed_mat, vocab_to_number)[tf.newaxis, ...]
+			max_mag_embed = get_max_magnitude(embed_mat)
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
 			learner_mae, w_mag, b_mag, grads = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, params)
+			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, max_mag_embed, params)
 
 			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_idices])
 
@@ -84,7 +85,7 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 	avg_learner_weight_mag = learner_weight_magnitude(base_learner, params)
 	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag, base_learner.layers[0].weights[1].numpy(), latest_grads
 
-def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, params):
+def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, max_mag_embed, params):
 
 	with tf.GradientTape() as meta_tape:
 
@@ -98,13 +99,13 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
 
-		target_magnitude = tf.math.sqrt(tf.reduce_sum(target_embed ** 2))
+		target_magnitude = tf.math.sqrt(tf.reduce_sum(target_embed ** 2)) / tf.constant(max_mag_embed)
 
 		interpreter_outputs, interpreter_mag_pred = meta_interpreter_part_a(interpreter_inputs)
 
-		most_similar_idices = algo(feature_embeds, tf.squeeze(interpreter_outputs))
+		most_similar_idices = algo(feature_embeds, tf.squeeze(interpreter_outputs), tf.squeeze(interpreter_mag_pred))
 
-		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values)) + tf.square(target_magnitude - interpreter_mag_pred)
+		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values)) + tf.clip_by_value(tf.square(target_magnitude - interpreter_mag_pred), clip_value_max = tf.constant(max_mag_embed))
 
 		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values)) + tf.abs(target_magnitude - interpreter_mag_pred)
 
