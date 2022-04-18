@@ -29,9 +29,10 @@ CHECKED - create approach 7:
 		- by calculating and ordering by summed cosine similarity of every word with all other words
 		- and deleting top few
 	* DONE try other end functions like sine or tangent etc
-	* new approach takes into account embedding magnitude
-	* new approach takes into account gradient
-	* new approach ONLY uses gradient
+	* DONE new approach takes into account gradient
+	* DONE new approach ONLY uses gradient
+	* DONE new approach takes into account embedding magnitude
+	* train approach over night
 	* test model on clustering algorithms
 
 - RESULTS:
