@@ -72,7 +72,7 @@ class Part_A(tf.keras.models.Model):
 
 		weights = raw_weights / tf.reduce_sum(raw_weights) # tf.sqrt(tf.reduce_sum(raw_weights ** 2))
 
-		weight_gradients = raw_weight_gradients / tf.reduce_sum(raw_weights) #tf.sqrt(tf.reduce_sum(raw_weight_gradients ** 2))
+		weight_gradients = raw_weight_gradients / tf.reduce_sum(raw_weight_gradients) #tf.sqrt(tf.reduce_sum(raw_weight_gradients ** 2))
 
 		# bias_gradients = raw_bias_gradients / tf.sqrt(tf.reduce_sum(raw_bias_gradients ** 2))
 

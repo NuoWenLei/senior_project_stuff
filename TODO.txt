@@ -9,7 +9,6 @@ CHECKED - create approach 6:
 		* see https://arxiv.org/pdf/1606.07792.pdf
 	* DONE individual processing of weights + biases
 	* DONE concatenate with embedding
-	* perhaps use cos sim between feature embeds
 	* DONE use batch norm
 		* RESULT: Doesn't work because it doesn't globally scale weights
 
@@ -32,8 +31,10 @@ CHECKED - create approach 7:
 	* DONE new approach takes into account gradient
 	* DONE new approach ONLY uses gradient
 	* DONE new approach takes into account embedding magnitude
+	* perhaps use cos sim between feature embeds
 	* train approach over night
 	* test model on clustering algorithms
+		- create clusters of vocab and turn task into classification (test whether model is actually constantly learning)
 
 - RESULTS:
 	* Currently Approach 3 is performing the best with cosine angle predict
