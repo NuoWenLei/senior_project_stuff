@@ -31,10 +31,12 @@ CHECKED - create approach 7:
 	* DONE new approach takes into account gradient
 	* DONE new approach ONLY uses gradient
 	* DONE new approach takes into account embedding magnitude
+	* DONE train approach over night
 	* perhaps use cos sim between feature embeds
-	* train approach over night
-	* test model on clustering algorithms
-		- create clusters of vocab and turn task into classification (test whether model is actually constantly learning)
+	* use loss of training
+		- problem with this is in multi-layer network,
+		  loss will become less associated with any specific layer
+	* allow information of order, assign certain index to each feature and mask out the feature used as target
 
 - RESULTS:
 	* Currently Approach 3 is performing the best with cosine angle predict
