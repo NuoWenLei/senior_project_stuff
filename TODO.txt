@@ -18,7 +18,7 @@ CHECKED - create approach 7:
 
 - (Continue from Approach 4) Try cosine angle predict with other approaches
 
-- update train sequence to display:
+- CHECKED update train sequence to display:
 	* DONE top 3 most similar words (UPDATE ALGO)
 	* DONE similarity between most similar word and target word
 
@@ -32,11 +32,14 @@ CHECKED - create approach 7:
 	* DONE new approach ONLY uses gradient
 	* DONE new approach takes into account embedding magnitude
 	* DONE train approach over night
-	* perhaps use cos sim between feature embeds
+	* NEED TEST perhaps use cos sim between feature embeds
 	* use loss of training
 		- problem with this is in multi-layer network,
 		  loss will become less associated with any specific layer
-	* allow information of order, assign certain index to each feature and mask out the feature used as target
+	* NEED TEST allow information of order, assign certain index to each feature and mask out the feature used as target
+	* Create new train sequence that includes as inputs:
+		- target_col to mask out
+		- covariance similarity matrix between embeddings
 
 - RESULTS:
 	* Currently Approach 3 is performing the best with cosine angle predict
