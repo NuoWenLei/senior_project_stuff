@@ -1,11 +1,12 @@
 import json, tensorflow as tf, pandas as pd, numpy as np
+from winreg import ExpandEnvironmentStrings
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from helper_functions_9 import *
-from base_learner_9 import *
+from new_help_functions import *
+from new_base_learner import *
 # from Approach_1 import *
-from Approach_9 import *
+from New_Approach_1 import *
 
 
 
@@ -15,14 +16,14 @@ def train_sequence(path_to_params):
 	dataset_generator = load_dataset_generator(params["DATA_PATH"])
 	vocab, embed_mat, vocab_to_number = load_embed_and_dictionary(params["VOCAB_PATH"], params["EMBED_PATH"])
 	max_mag_embed = get_max_magnitude(embed_mat)
-	part_a = Part_A(params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"], params["BATCH_SIZE"], params["D_MODEL"], params["HIDDEN_SIZE"], max_mag_embed)
+	part_a = Part_A_V2(params["BATCH_SIZE"], params["D_MODEL"], params["HIDDEN_SIZE"], params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"])
 	interpreter_optimizer = tf.keras.optimizers.Adam()
 	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, embed_mat)
-	logs = meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, cos_sim_algo, max_mag_embed, params)
+	logs = meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, cos_sim_algo, params)
 
 	return part_a, cos_sim_algo, logs
 
-def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, algo, max_mag_embed, params):
+def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, algo, params):
 
 	all_meta_mae = []
 	all_learner_mae = []
@@ -34,7 +35,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 		print(f"On Epoch {e}")
 		epoch_maes = []
 		for s in range(params["META_STEPS"]):
-			batch = next(generator)
+			batch, target_col = next(generator)
 			feature_embeds = np.array([average_embed(w, embed_mat, vocab_to_number) for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
 			target_embed = average_embed(batch[2].name, embed_mat, vocab_to_number)[tf.newaxis, ...]
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
@@ -42,7 +43,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			
 			learner_mae, w_mag, b_mag, grads = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, max_mag_embed, params)
+			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads,target_col, params)
 
 			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_idices])
 
@@ -85,33 +86,47 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 	avg_learner_weight_mag = learner_weight_magnitude(base_learner, params)
 	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag, base_learner.layers[0].weights[1].numpy(), latest_grads
 
-def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, max_mag_embed, params):
+def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, target_col, params):
 
-	with tf.GradientTape() as meta_tape:
+	expanded_weights = expand_to_include_masked_feature(base_learner.layers[0].weights[0].numpy(), target_col)
 
-		interpreter_inputs = {
-			"embeds": feature_embeds,
-			"weights": base_learner.layers[0].weights[0],
-			"biases": base_learner.layers[0].weights[1],
-			"weight_gradients": grads[0],
-			"bias_gradients": grads[1]
-		}
+	expanded_grads = expand_to_include_masked_feature(grads[0].numpy(), target_col)
 
-		interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
+	expanded_feature_embeds = expand_to_include_masked_feature(feature_embeds, target_col)
 
-		target_magnitude = tf.math.sqrt(tf.reduce_sum(target_embed ** 2)) / tf.constant(max_mag_embed)
+	interpreter_inputs = {
+		"embeds": expanded_feature_embeds,
+		"weights": expanded_weights,
+		"biases": base_learner.layers[0].weights[1],
+		"weight_gradients": expanded_grads,
+		"bias_gradients": grads[1]
+	}
 
-		interpreter_outputs, interpreter_mag_pred = meta_interpreter_part_a(interpreter_inputs)
+	interpreter_true_values = cosine_similarity(feature_embeds, target_embed)
 
-		most_similar_idices = algo(feature_embeds, tf.squeeze(interpreter_outputs), tf.squeeze(interpreter_mag_pred))
+	expanded_interpreter_true_values = tf.cast(expand_to_include_masked_feature(interpreter_true_values.numpy(), target_col), tf.float32)
 
-		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values)) + tf.square(target_magnitude - interpreter_mag_pred)
+	output_mask = np.ones_like(interpreter_outputs, dtype = np.float32)
 
-		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values)) + tf.abs(target_magnitude - interpreter_mag_pred)
+	output_mask[:, target_col] *= 0.0
+
+	with tf.GradientTape() as meta_tape:		
+
+		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
+
+		interpreter_outputs *= tf.cast(output_mask, tf.float32)
+
+		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - expanded_interpreter_true_values))
+
+		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - expanded_interpreter_true_values))
 
 		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
+	
+	interpreter_outputs_cleaned = np.squeeze(interpreter_outputs.numpy())[:, ~target_col]
+	
+	most_similar_idices = algo(feature_embeds, interpreter_outputs_cleaned)
 
 	return interpreter_mae_loss, most_similar_idices
 
