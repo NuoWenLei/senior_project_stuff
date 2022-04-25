@@ -22,9 +22,11 @@ class Part_A_V2(tf.keras.models.Model):
 
 		self.norm_1 = tf.keras.layers.LayerNormalization()
 
-		self.mha_2 = tf.keras.layers.MultiHeadAttention(num_heads = heads, key_dim = query_size, attention_axes = (1,3))
+		self.mha_2 = tf.keras.layers.MultiHeadAttention(num_heads = heads, key_dim = query_size)
 
 		self.norm_2 = tf.keras.layers.LayerNormalization()
+
+		self.weight_grad_mixer = tf.keras.layers.Dense(1, activation = "relu")
 
 		self.axis_3_hidden_layers = [
 			tf.keras.layers.Dense(self.hidden_size, activation = "relu")
@@ -71,13 +73,15 @@ class Part_A_V2(tf.keras.models.Model):
 
 		weight_gradients = raw_weight_gradients / tf.reduce_sum(raw_weight_gradients)
 
-		expanded_weights = tf.reshape(weights, (self.batch_size, -1, 1, 1))
+		expanded_weights = tf.reshape(weights, (self.batch_size, -1, 1))
 
-		expanded_weight_gradients = tf.reshape(weight_gradients, (self.batch_size, -1, 1, 1))
+		expanded_weight_gradients = tf.reshape(weight_gradients, (self.batch_size, -1, 1))
 
-		expanded_matrix = tf.reshape(co_sim_matrix, (self.batch_size, tf.shape(co_sim_matrix)[1], tf.shape(co_sim_matrix)[2], 1))
+		expanded_matrix = tf.reshape(co_sim_matrix, (self.batch_size, tf.shape(co_sim_matrix)[1], tf.shape(co_sim_matrix)[2]))
 
-		weight_grad_concat = tf.concat([expanded_weights, expanded_weight_gradients, expanded_matrix], axis = -2)
+		weight_grad_concat = tf.concat([expanded_weights, expanded_weight_gradients, expanded_matrix], axis = -1)
+
+		weight_grad_mix = self.weight_grad_mixer(weight_grad_concat)
 
 
 
@@ -86,9 +90,9 @@ class Part_A_V2(tf.keras.models.Model):
 		self_attention = self.norm_1(embeds + self_attention_embeds)
 
 
-		expanded_self_attention = tf.repeat(tf.reshape(self_attention, (self.batch_size, -1, 1, self.embedding_size)), tf.shape(weight_grad_concat)[-2], axis = -2)
+		expanded_self_attention = tf.reshape(self_attention, (self.batch_size, -1, self.embedding_size))
 
-		expanded_weight_grad_concat = tf.repeat(weight_grad_concat, self.embedding_size, axis = -1)
+		expanded_weight_grad_concat = tf.repeat(weight_grad_mix, self.embedding_size, axis = -1)
 
 		weighted_attention_embeds = self.mha_2(expanded_weight_grad_concat, expanded_self_attention)
 
