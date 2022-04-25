@@ -26,8 +26,8 @@ def create_dataset_generator(data):
 	i = 0
 	while True:
 		i += 1
-		# if i > len(cols):
-		# 	i = 1
+		if i > len(cols):
+			i = 1
 		# 	p = np.random.permutation(cols.shape[0])
 		# 	cols = cols[p]
 		

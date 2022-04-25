@@ -86,7 +86,7 @@ class Part_A_V2(tf.keras.models.Model):
 		self_attention = self.norm_1(embeds + self_attention_embeds)
 
 
-		expanded_self_attention = tf.reshape(self_attention, (self.batch_size, -1, 1, self.embedding_size))
+		expanded_self_attention = tf.repeat(tf.reshape(self_attention, (self.batch_size, -1, 1, self.embedding_size)), tf.shape(weight_grad_concat)[-2], axis = -2)
 
 		expanded_weight_grad_concat = tf.repeat(weight_grad_concat, self.embedding_size, axis = -1)
 
