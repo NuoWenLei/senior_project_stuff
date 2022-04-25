@@ -36,7 +36,7 @@ CHECKED - create approach 7:
 	* use loss of training
 		- problem with this is in multi-layer network,
 		  loss will become less associated with any specific layer
-	* NEED TEST allow information of order, assign certain index to each feature and mask out the feature used as target
+	* DEBUG allow information of order, assign certain index to each feature and mask out the feature used as target
 	* Create new train sequence that includes as inputs:
 		- target_col to mask out
 		- covariance similarity matrix between embeddings

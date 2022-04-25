@@ -1,5 +1,4 @@
 import json, tensorflow as tf, pandas as pd, numpy as np
-from winreg import ExpandEnvironmentStrings
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
@@ -38,12 +37,13 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			batch, target_col = next(generator)
 			feature_embeds = np.array([average_embed(w, embed_mat, vocab_to_number) for w in batch[0].columns]).reshape(1, batch[0].shape[1], -1)
 			target_embed = average_embed(batch[2].name, embed_mat, vocab_to_number)[tf.newaxis, ...]
+			covariance_matrix = get_covariance_similarity_matrix(feature_embeds)
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
 			learner_mae, w_mag, b_mag, grads = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
 
-			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads,target_col, params)
+			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads,target_col, covariance_matrix, params)
 
 			guess_cos_sim = cosine_similarity(target_embed, embed_mat[most_similar_idices])
 
@@ -86,16 +86,21 @@ def train_function(base_learner, meta_interpreter, feature_embeds, target_embed,
 	avg_learner_weight_mag = learner_weight_magnitude(base_learner, params)
 	return test_learner(base_learner, test_generator, params), avg_learner_weight_mag, base_learner.layers[0].weights[1].numpy(), latest_grads
 
-def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, target_col, params):
+def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads, target_col, covariance_matrix, params):
 
 	expanded_weights = expand_to_include_masked_feature(base_learner.layers[0].weights[0].numpy(), target_col)
 
 	expanded_grads = expand_to_include_masked_feature(grads[0].numpy(), target_col)
 
-	expanded_feature_embeds = expand_to_include_masked_feature(feature_embeds, target_col)
+	expanded_feature_embeds = expand_to_include_masked_feature(feature_embeds, target_col, axis = 1)
+
+	expanded_covariance_matrix = expand_to_include_masked_feature(covariance_matrix, target_col, axis = 1)
+
+	expanded_covariance_matrix = expand_to_include_masked_feature(expanded_covariance_matrix, target_col, axis = 2)
 
 	interpreter_inputs = {
 		"embeds": expanded_feature_embeds,
+		"co_sim_matrix": expanded_covariance_matrix,
 		"weights": expanded_weights,
 		"biases": base_learner.layers[0].weights[1],
 		"weight_gradients": expanded_grads,
@@ -106,7 +111,7 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 	expanded_interpreter_true_values = tf.cast(expand_to_include_masked_feature(interpreter_true_values.numpy(), target_col), tf.float32)
 
-	output_mask = np.ones_like(interpreter_outputs, dtype = np.float32)
+	output_mask = np.ones((params["BATCH_SIZE"], params["FEATURE_SIZE"] + 1), dtype = np.float32)
 
 	output_mask[:, target_col] *= 0.0
 

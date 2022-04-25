@@ -105,10 +105,23 @@ def average_embed(words_string, embed_mat, dictionary):
 def learner_weight_magnitude(learner, params):
 	return tf.reduce_sum(tf.abs(learner.layers[0].weights[0])).numpy() / float(params["FEATURE_SIZE"])
 
-def expand_to_include_masked_feature(arr, col):
-	expanded_zeros = np.zeros([np.shape(arr)[0] + 1] + np.shape(arr)[1:])
+def expand_to_include_masked_feature(arr, col, axis = 0):
+	dims = [i for i in np.shape(arr)]
+	dims[axis] += 1
+	expanded_zeros = np.zeros(dims, dtype = np.float32)
 
-	expanded_zeros[:col] = arr[:col]
-	expanded_zeros[col + 1:] = arr[col:]
+	if axis == 0:
+		expanded_zeros[:col] = arr[:col]
+		expanded_zeros[col+1:] = arr[col:]
+	if axis == 1:
+		expanded_zeros[:, :col] = arr[:, :col]
+		expanded_zeros[:, col+1:] = arr[:, col:]
+	if axis == 2:
+		expanded_zeros[:, :, :col] = arr[:, :, :col]
+		expanded_zeros[:, :, col+1:] = arr[:, :, col:]
 
 	return expanded_zeros
+
+def get_covariance_similarity_matrix(embeds):
+	norm_embeds = embeds / tf.norm(embeds, axis = -1)[..., tf.newaxis]
+	return np.einsum("ijk,ivk->ijv", norm_embeds, norm_embeds)

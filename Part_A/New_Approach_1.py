@@ -75,7 +75,9 @@ class Part_A_V2(tf.keras.models.Model):
 
 		expanded_weight_gradients = tf.reshape(weight_gradients, (self.batch_size, -1, 1, 1))
 
-		weight_grad_concat = tf.concat([expanded_weights, expanded_weight_gradients, co_sim_matrix], axis = -2)
+		expanded_matrix = tf.reshape(co_sim_matrix, (self.batch_size, tf.shape(co_sim_matrix)[1], tf.shape(co_sim_matrix)[2], 1))
+
+		weight_grad_concat = tf.concat([expanded_weights, expanded_weight_gradients, expanded_matrix], axis = -2)
 
 
 
