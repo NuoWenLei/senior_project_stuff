@@ -111,9 +111,9 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 	expanded_interpreter_true_values = tf.cast(expand_to_include_masked_feature(interpreter_true_values.numpy(), target_col, axis = 1), tf.float32)
 
-	output_mask = np.ones((params["BATCH_SIZE"], params["FEATURE_SIZE"] + 1), dtype = np.float32)
+	output_mask = np.ones((params["BATCH_SIZE"], params["FEATURE_SIZE"]), dtype = np.float32)
 
-	output_mask[:, target_col] *= 0.0
+	output_mask = expand_to_include_masked_feature(output_mask, target_col, axis = 1)
 
 	with tf.GradientTape() as meta_tape:		
 
@@ -129,7 +129,7 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		interpreter_optimizer.apply_gradients(zip(interpreter_grads, meta_interpreter_part_a.trainable_variables))
 	
-	interpreter_outputs_cleaned = np.squeeze(interpreter_outputs.numpy())[~target_col]
+	interpreter_outputs_cleaned = np.delete(np.squeeze(interpreter_outputs.numpy()), target_col)
 	
 	most_similar_idices = algo(feature_embeds, interpreter_outputs_cleaned)
 
