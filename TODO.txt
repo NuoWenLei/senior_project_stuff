@@ -32,17 +32,25 @@ CHECKED - create approach 7:
 	* DONE new approach ONLY uses gradient
 	* DONE new approach takes into account embedding magnitude
 	* DONE train approach over night
-	* NEED TEST perhaps use cos sim between feature embeds
+	* DONE perhaps use cos sim between feature embeds
 	* use loss of training
 		- problem with this is in multi-layer network,
 		  loss will become less associated with any specific layer
-	* DEBUG allow information of order, assign certain index to each feature and mask out the feature used as target
-	* Create new train sequence that includes as inputs:
+	* DONE allow information of order, assign certain index to each feature and mask out the feature used as target
+	* DONE Create new train sequence that includes as inputs:
 		- target_col to mask out
 		- covariance similarity matrix between embeddings
 
 - RESULTS:
-	* Currently Approach 3 is performing the best with cosine angle predict
-	* cosine function is best for finalizing guesses
+	* (4/12/2022) Currently Approach 3 is performing the best with cosine angle predict
+	* (4/14/2022) cosine function is best for finalizing guesses
+	* (4/19/2022) Approach 10 out-performs Approach 3, with room to improve:
+		- average around 30% cosine similarity
+		- similarity does not improve with training time
+		- final similarity results is LOOSELY inversely correlated to loss 
+	* (4/27/2022) New Approach 1 has out-performed previous approaches, showing promise in most previous problems:
+		- average around 40% cosine similarity
+		- similarity improves steadily with training time
+		- final similarity STRONGLY inversely correlated to loss
 
 
