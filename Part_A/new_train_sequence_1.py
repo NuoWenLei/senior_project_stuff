@@ -17,7 +17,7 @@ def train_sequence(path_to_params):
 	max_mag_embed = get_max_magnitude(embed_mat)
 	part_a = Part_A_V2(params["BATCH_SIZE"], params["D_MODEL"], params["HIDDEN_SIZE"], params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"])
 	interpreter_optimizer = tf.keras.optimizers.Adam()
-	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, embed_mat)
+	cos_sim_algo = Cosine_Similarity_Algorithmic_Search(vocab, embed_mat, num_closest = params["NUM_SIMILAR_WORDS"])
 	logs = meta_train_function(part_a, dataset_generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, cos_sim_algo, params)
 
 	return part_a, cos_sim_algo, logs
