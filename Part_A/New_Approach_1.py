@@ -53,7 +53,7 @@ class Part_A_V2(tf.keras.models.Model):
 
 		embeds = tf.reshape(embeds, (self.batch_size, -1, self.embedding_size))
 
-		raw_weights = tf.reshape(raw_weights, (self.batch_size, -1))
+		raw_weights = tf.abs(tf.reshape(raw_weights, (self.batch_size, -1)))
 
 		raw_weight_gradients = tf.reshape(raw_weight_gradients, (self.batch_size, -1))
 

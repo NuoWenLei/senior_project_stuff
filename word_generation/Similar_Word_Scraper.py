@@ -5,9 +5,9 @@ import nltk, string
 
 class Similar_Word_Scraper():
 
-	def __init__(self, starting_word, search_depth, allowed_pos = ["NN", "NNP", "NNS", "NNPS", "JJ", "JJR", "JJS"]):
+	def __init__(self, starting_words, search_depth, allowed_pos = ["NN", "NNP", "NNS", "NNPS", "JJ", "JJR", "JJS"]):
 		self.stop = stopwords.words("english")
-		self.starting_word = starting_word
+		self.starting_words = starting_words
 		self.depth = search_depth
 		self.allowed_pos = allowed_pos
 
@@ -51,31 +51,31 @@ class Similar_Word_Scraper():
 	def vocab_generation(self):
 		# Initialize word set and queue
 		curr_set = []
-		queue = [self.starting_word]
+		queue = self.starting_words.copy()
 
 		# Breadth-first search (BFS) down the tree
 		for i in range(self.depth):
 			print(i)
 
-		# Create queue for all words in the next depth
-		new_queue = []
+			# Create queue for all words in the next depth
+			new_queue = []
 
-		for w in tqdm(queue):
-			# Record current word with current depth
-			curr_set.append([w, i])
+			for w in tqdm(queue):
+				# Record current word with current depth
+				curr_set.append([w, i])
 
-			# Queue all direct children nodes of this word
-			new_queue = self.queue_all_words_through_wordnet(w, curr_set, new_queue, queue)
+				# Queue all direct children nodes of this word
+				new_queue = self.queue_all_words_through_wordnet(w, curr_set, new_queue, queue)
 
-		print(f"Length of new queue: {len(new_queue)}")
+			print(f"Length of new queue: {len(new_queue)}")
 
-		# Overwrite old queue
-		queue = new_queue.copy()
+			# Overwrite old queue
+			queue = new_queue.copy()
 
 		return curr_set
 
 
 
-	def call(self):
+	def __call__(self):
 		return self.vocab_generation()
 		
