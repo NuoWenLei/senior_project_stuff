@@ -2,7 +2,7 @@
 # import tensorflow as tf
 # from tensorflow.keras.models import Model
 # from tensorflow.keras.layers import *
-from train_sequence_approach_9 import tf
+from train_sequence_approach_10 import tf
 # from train_sequence import 
 
 

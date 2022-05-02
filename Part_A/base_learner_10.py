@@ -2,7 +2,7 @@
 # import numpy as np
 # from tensorflow.keras.layers import *
 # from tensorflow.keras.models import *
-from train_sequence_approach_9 import tf
+from train_sequence_approach_10 import tf
 
 def get_base_learner(neurons, layers, pred_size):
 	m = tf.keras.models.Sequential()

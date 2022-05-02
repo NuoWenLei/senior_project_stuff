@@ -9,7 +9,7 @@ def get_norm_matrix(wine_embed):
 def get_max_magnitude(wine_embed):
 	return np.sqrt((wine_embed ** 2).sum(axis = -1)).max()
 
-from Algorithmic_Search_9 import Cosine_Similarity_Algorithmic_Search
+from Algorithmic_Search_10 import Cosine_Similarity_Algorithmic_Search
 import json
 # from sklearn.model_selection import 
 # from sklearn.preprocessing import 
