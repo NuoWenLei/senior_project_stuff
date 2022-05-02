@@ -1,3 +1,4 @@
+from venv import create
 import pandas as pd
 import numpy as np
 from new_train_sequence_1 import tf, train_test_split, MinMaxScaler
@@ -14,12 +15,19 @@ import json
 # from sklearn.model_selection import 
 # from sklearn.preprocessing import 
 
-def load_dataset_generator(path):
-	df = pd.read_csv(path, delimiter = ";").drop(["pH", "citric acid"], axis = 1)
-	new_data = pd.DataFrame(scale_data(df), columns = df.columns)
-	generator = create_dataset_generator(new_data)
+def load_dataset_generator(path, dataset_name = "wine"):
+	if dataset_name == "wine":
+		df = pd.read_csv(path, delimiter = ";").drop(["pH", "citric acid"], axis = 1)
+		new_data = pd.DataFrame(scale_data(df), columns = df.columns)
+		generator = create_dataset_generator(new_data)
 
-	return generator
+		return generator
+	elif dataset_name == "salary":
+		df = pd.read_csv(path)
+		new_data = pd.DataFrame(scale_data(df), columns = df.columns)
+		generator = create_dataset_generator(new_data)
+
+		return generator
 
 def create_dataset_generator(data):
 	cols = data.columns.values

@@ -7,9 +7,9 @@ class Embed_Generator():
 		self.vocab = vocab
 		self.nlp = spacy.load(spacy_module)
 
-	def call(self):
+	def __call__(self):
 		mat = []
-		for w in self.vocab:
+		for w in tqdm(self.vocab):
 			mat.append(self.nlp(w).vector)
 		
 		return np.array(mat)

@@ -6,7 +6,7 @@ import nltk, string
 class Similar_Word_Scraper():
 
 	def __init__(self, starting_words, search_depth, allowed_pos = ["NN", "NNP", "NNS", "NNPS", "JJ", "JJR", "JJS"]):
-		self.stop = stopwords.words("english")
+		self.stops = stopwords.words("english")
 		self.starting_words = starting_words
 		self.depth = search_depth
 		self.allowed_pos = allowed_pos
