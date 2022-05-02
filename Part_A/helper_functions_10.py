@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from new_train_sequence_1 import tf, train_test_split, MinMaxScaler
+from train_sequence_approach_10 import tf, train_test_split, MinMaxScaler
 
 # Defined here to give Algorithmic Search access
 def get_norm_matrix(wine_embed):
@@ -9,7 +9,7 @@ def get_norm_matrix(wine_embed):
 def get_max_magnitude(wine_embed):
 	return np.sqrt((wine_embed ** 2).sum(axis = -1)).max()
 
-from New_Algorithmic_Approach import Cosine_Similarity_Algorithmic_Search
+from Algorithmic_Search_9 import Cosine_Similarity_Algorithmic_Search
 import json
 # from sklearn.model_selection import 
 # from sklearn.preprocessing import 
@@ -35,13 +35,13 @@ def create_dataset_generator(data):
 		i += 1
 		if i > len(cols):
 			i = 1
-		# 	p = np.random.permutation(cols.shape[0])
-		# 	cols = cols[p]
+			p = np.random.permutation(cols.shape[0])
+			cols = cols[p]
 		
 		X_ = data.drop(cols[i-1], axis = 1)
 		y_ = data[cols[i-1]]
 
-		yield train_test_split(X_, y_, random_state = 0, train_size = .8), i-1
+		yield train_test_split(X_, y_, random_state = 0, train_size = .8)
 
 def scale_data(data):
 	minmax = MinMaxScaler()
@@ -111,24 +111,3 @@ def average_embed(words_string, embed_mat, dictionary):
 
 def learner_weight_magnitude(learner, params):
 	return tf.reduce_sum(tf.abs(learner.layers[0].weights[0])).numpy() / float(params["FEATURE_SIZE"])
-
-def expand_to_include_masked_feature(arr, col, axis = 0):
-	dims = [i for i in np.shape(arr)]
-	dims[axis] += 1
-	expanded_zeros = np.zeros(dims, dtype = np.float32)
-
-	if axis == 0:
-		expanded_zeros[:col] = arr[:col]
-		expanded_zeros[col+1:] = arr[col:]
-	if axis == 1:
-		expanded_zeros[:, :col] = arr[:, :col]
-		expanded_zeros[:, col+1:] = arr[:, col:]
-	if axis == 2:
-		expanded_zeros[:, :, :col] = arr[:, :, :col]
-		expanded_zeros[:, :, col+1:] = arr[:, :, col:]
-
-	return expanded_zeros
-
-def get_covariance_similarity_matrix(embeds):
-	norm_embeds = embeds / tf.norm(embeds, axis = -1)[..., tf.newaxis]
-	return np.einsum("ijk,ivk->ijv", norm_embeds, norm_embeds)
