@@ -9,10 +9,10 @@ from Approach_10 import *
 
 
 
-def train_sequence(path_to_params):
+def train_sequence(path_to_params, dataset_name = "wine"):
 	with open(path_to_params, "r") as params_json:
 		params = json.load(params_json)
-	dataset_generator = load_dataset_generator(params["DATA_PATH"])
+	dataset_generator = load_dataset_generator(params["DATA_PATH"], dataset_name = dataset_name)
 	vocab, embed_mat, vocab_to_number = load_embed_and_dictionary(params["VOCAB_PATH"], params["EMBED_PATH"])
 	max_mag_embed = get_max_magnitude(embed_mat)
 	part_a = Part_A(params["HEADS"], params["QUERY_SIZE"], params["FEATURE_SIZE"], params["BATCH_SIZE"], params["D_MODEL"], params["HIDDEN_SIZE"], max_mag_embed)
