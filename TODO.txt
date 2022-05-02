@@ -40,6 +40,11 @@ CHECKED - create approach 7:
 	* DONE Create new train sequence that includes as inputs:
 		- target_col to mask out
 		- covariance similarity matrix between embeddings
+	* Try dynamic approach (Approach 10) on salary dataset
+		- compare results with static approach
+		- theory:
+			- static approach produces better training results but less general testing results
+			- dynamic approach produces relatively same level of train and test with worse similarity overall
 
 - RESULTS:
 	* (4/12/2022) Currently Approach 3 is performing the best with cosine angle predict
