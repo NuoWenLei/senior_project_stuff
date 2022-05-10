@@ -1,6 +1,6 @@
 # senior_project_stuff
 
-This repository contains files from my high school senior project in Concord Academy. In this project, I propose a parasite model that attaches to a simple feed forward model and uses the updating weights to find a word that closely represents neurons in hidden layers.
+This repository contains files from my high school senior project in Concord Academy. In this project, I experiment with a parasite model that attaches to a simple feed forward model and uses the updating weights to find words that closely represent neurons in hidden layers.
 
 References:
 
