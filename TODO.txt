@@ -4,7 +4,7 @@ CHECKED - update train sequence to record:
 	* absolute sum of base learner weight (to determine if magnitude of base learner weight affects interpreter prediction)
 
 CHECKED - create approach 6:
-	* Linear and Dense Combination (Wide and Deep Model)
+	* DONE Linear and Dense Combination (Wide and Deep Model)
 		* see https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/estimator/DNNLinearCombinedRegressor
 		* see https://arxiv.org/pdf/1606.07792.pdf
 	* DONE individual processing of weights + biases
@@ -16,9 +16,9 @@ CHECKED - create approach 7:
 	* predict angle and use cosine to determine
 	* domain of cosine is 0 to pi
 
-- (Continue from Approach 4) Try cosine angle predict with other approaches
+CHECKED - (Continue from Approach 4) Try cosine angle predict with other approaches
 
-- CHECKED update train sequence to display:
+CHECKED - update train sequence to display:
 	* DONE top 3 most similar words (UPDATE ALGO)
 	* DONE similarity between most similar word and target word
 
@@ -33,7 +33,7 @@ CHECKED - create approach 7:
 	* DONE new approach takes into account embedding magnitude
 	* DONE train approach over night
 	* DONE perhaps use cos sim between feature embeds
-	* use loss of training
+	* CANCEL use loss of training
 		- problem with this is in multi-layer network,
 		  loss will become less associated with any specific layer
 	* DONE allow information of order, assign certain index to each feature and mask out the feature used as target
@@ -45,7 +45,8 @@ CHECKED - create approach 7:
 		- theory:
 			- static approach produces better training results but less general testing results
 			- dynamic approach produces relatively same level of train and test with worse similarity overall
-	* Try dynamic approach (Approach 10) on housing dataset
+	* DONE Try dynamic approach (Approach 10) on housing dataset
+	* Train housing dataset with model that uses word sequence embeddings instead of average embedding of words in phrase
 
 - RESULTS:
 	* (4/12/2022) Currently Approach 3 is performing the best with cosine angle predict
@@ -58,5 +59,9 @@ CHECKED - create approach 7:
 		- average around 40% cosine similarity
 		- similarity improves steadily with training time
 		- final similarity STRONGLY inversely correlated to loss
+	* (5/09/2022) Comparing the prediction results between New Approach 1 and Approach 10:
+		- New Approach 1 seems to overfit more from training, predicting exact same words for most nodes
+		- While Approach 10 does seem to predict more different words, it also predicts many same words for most nodes
+		- I suspect nodes with same words that is present throughout different target column results are nodes that are less utilized in the network
 
 
