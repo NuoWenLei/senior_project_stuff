@@ -47,6 +47,9 @@ CHECKED - update train sequence to display:
 			- dynamic approach produces relatively same level of train and test with worse similarity overall
 	* DONE Try dynamic approach (Approach 10) on housing dataset
 	* Train housing dataset with model that uses word sequence embeddings instead of average embedding of words in phrase
+	* Use Non-Parametric Transformer model structure:
+		- https://github.com/OATML/non-parametric-transformers
+		- https://arxiv.org/pdf/2106.02584.pdf
 
 - RESULTS:
 	* (4/12/2022) Currently Approach 3 is performing the best with cosine angle predict
