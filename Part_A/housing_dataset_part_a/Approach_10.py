@@ -8,12 +8,14 @@ from train_sequence_approach_10 import tf
 
 class Part_A(tf.keras.models.Model):
 
-	def __init__(self, heads, query_size, feature_size, batch_size, embedding_size, hidden_size, max_magnitude, name = "Part_A"):
+	def __init__(self, heads, query_size, feature_size, batch_size, embedding_size, hidden_size, max_magnitude, seq_length, name = "Part_A"):
 		super().__init__(name = name)
 
 		self.mha_1 = tf.keras.layers.MultiHeadAttention(num_heads=heads, key_dim=query_size, attention_axes = (2,3))
 
 		self.norm = tf.keras.layers.LayerNormalization()
+
+		self.seq_length = seq_length
 
 		self.d_model = heads * query_size
 
@@ -40,7 +42,7 @@ class Part_A(tf.keras.models.Model):
 		# self.b_pred = tf.Variable(self.bias_initializer((1,)))
 
 		self.dense_projection = tf.keras.models.Sequential([
-			tf.keras.layers.Dense(self.embedding_size, activaton = "relu"),
+			tf.keras.layers.Dense(self.embedding_size, activation = "relu"),
 			tf.keras.layers.Dense(self.embedding_size)
 		])
 
@@ -75,6 +77,13 @@ class Part_A(tf.keras.models.Model):
 		# Layer Inputs shape: (batch_size, feature_size)
 		# Layer Outputs shape: (batch_size, 1)
 
+		embeds = tf.reshape(embeds, (self.batch_size, self.feature_size, self.seq_length, self.embedding_size))
+		raw_weights = tf.reshape(raw_weights, (self.batch_size, self.feature_size))
+		raw_weight_gradients = tf.reshape(raw_weight_gradients, (self.batch_size, self.feature_size))
+		biases = tf.reshape(biases, (self.batch_size, 1))
+		bias_gradients = tf.reshape(bias_gradients, (self.batch_size, 1))
+
+
 		# embeds *= tf.math.sqrt(tf.cast(self.d_model, tf.float32)) # shape: (batch_size, feature_size, d_model)
 
 		weights = raw_weights / tf.reduce_sum(raw_weights) # tf.sqrt(tf.reduce_sum(raw_weights ** 2))
@@ -83,23 +92,23 @@ class Part_A(tf.keras.models.Model):
 
 		# bias_gradients = raw_bias_gradients / tf.sqrt(tf.reduce_sum(raw_bias_gradients ** 2))
 
-		self_attention_embeds = self.mha_1(embeds, embeds) # shape: (batch_size, feature_size, d_model)
+		self_attention_embeds = self.mha_1(embeds, embeds) # shape: (batch_size, feature_size, seq_length, d_model)
 
-		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, d_model)
+		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, seq_length, d_model)
 
-		lin_proj_self_attention = tf.reduce_sum(self.dense_projection(self_attention), axis = -2)
+		lin_proj_self_attention = tf.reduce_sum(self.dense_projection(self_attention), axis = -2) # shape: (batch_size, feature_size, d_model)
 
 		# repeated_weights = tf.repeat(weights[tf.newaxis, ...], self.feature_size, axis = -1)
 
 		# expanded_weights = tf.reshape(repeated_weights, (self.batch_size, self.feature_size, -1))
 
-		embed_magnitudes = tf.reduce_mean(tf.math.sqrt(tf.reduce_sum(embeds ** 2, axis = -1)), axis = -1)[..., tf.newaxis, tf.newaxis] / self.max_magnitude
+		embed_magnitudes = tf.reduce_mean(tf.math.sqrt(tf.reduce_sum(embeds ** 2, axis = -1)), axis = -1)[..., tf.newaxis] / self.max_magnitude
 
 		# embed_magnitudes = tf.sqrt((embeds ** 2).sum(axis = -1))[..., tf.newaxis]
 		
-		expanded_weights = weights[tf.newaxis, ...]
+		expanded_weights = weights[..., tf.newaxis]
 
-		expanded_weight_gradients = weight_gradients[tf.newaxis, ...]
+		expanded_weight_gradients = weight_gradients[..., tf.newaxis]
 
 		expanded_biases = tf.reshape(tf.repeat(biases, self.feature_size, axis = -1), (self.batch_size, self.feature_size))[..., tf.newaxis]
 

@@ -100,7 +100,7 @@ def load_embed_and_dictionary(path_to_words, path_to_embeds):
 	vocab_to_number["<pad>"] = len(vocab_to_number)
 	pad_included_embed_mat = np.vstack((embed_mat, np.zeros(embed_mat.shape[1])))
 	
-	return vocab, pad_included_embed_mat, vocab_to_number
+	return vocab, pad_included_embed_mat, vocab_to_number, embed_mat
 
 def cosine_similarity(x, y):
 	x_norm = tf.norm(x, axis = -1)
@@ -125,7 +125,7 @@ def pad_text(words_string, embed_mat, dictionary, seq_len):
 
 	new_seq = words + ["<pad>"] * pad_length
 
-	return np.array(embed_mat[dictionary[i]] for i in new_seq)
+	return np.array([embed_mat[dictionary[i]] for i in new_seq])
 
 def weighted_average_embed(words_string, embed_mat, dictionary):
 	words = words_string.split(" ")
