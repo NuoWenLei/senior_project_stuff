@@ -98,7 +98,7 @@ def load_embed_and_dictionary(path_to_words, path_to_embeds):
 	
 	# Add <pad> token
 	vocab_to_number["<pad>"] = len(vocab_to_number)
-	pad_included_embed_mat = np.vstack((embed_mat, np.zeros(embed_mat.shape[1]) - 1.))
+	pad_included_embed_mat = np.vstack((embed_mat, np.zeros(embed_mat.shape[1])))
 	
 	return vocab, pad_included_embed_mat, vocab_to_number
 

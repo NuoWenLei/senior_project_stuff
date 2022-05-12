@@ -93,7 +93,7 @@ class Part_A(tf.keras.models.Model):
 
 		# expanded_weights = tf.reshape(repeated_weights, (self.batch_size, self.feature_size, -1))
 
-		embed_magnitudes = tf.math.sqrt(tf.reduce_sum(embeds ** 2, axis = -1))[..., tf.newaxis] / self.max_magnitude
+		embed_magnitudes = tf.reduce_mean(tf.math.sqrt(tf.reduce_sum(embeds ** 2, axis = -1)), axis = -1)[..., tf.newaxis, tf.newaxis] / self.max_magnitude
 
 		# embed_magnitudes = tf.sqrt((embeds ** 2).sum(axis = -1))[..., tf.newaxis]
 		
