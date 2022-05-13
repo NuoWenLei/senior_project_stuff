@@ -105,7 +105,7 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 			"bias_gradients": grads[1]
 		}
 
-		interpreter_true_values = cosine_similarity(average_feature_embeds, target_embed)
+		interpreter_true_values = tf.cast(cosine_similarity(average_feature_embeds, target_embed), tf.float32)
 
 		interpreter_outputs = meta_interpreter_part_a(interpreter_inputs)
 
@@ -113,9 +113,9 @@ def meta_step(base_learner, meta_interpreter_part_a, feature_embeds, target_embe
 
 		target_indices = algo(average_feature_embeds, tf.squeeze(interpreter_true_values))
 
-		interpreter_mse_loss = tf.reduce_sum(tf.square(interpreter_outputs - interpreter_true_values))
+		interpreter_mse_loss = tf.reduce_sum(tf.square(tf.cast(interpreter_outputs, tf.float32) - interpreter_true_values))
 
-		interpreter_mae_loss = tf.reduce_mean(tf.abs(interpreter_outputs - interpreter_true_values))
+		interpreter_mae_loss = tf.reduce_mean(tf.abs(tf.cast(interpreter_outputs, tf.float32) - interpreter_true_values))
 
 		interpreter_grads = meta_tape.gradient(interpreter_mse_loss, meta_interpreter_part_a.trainable_variables)
 

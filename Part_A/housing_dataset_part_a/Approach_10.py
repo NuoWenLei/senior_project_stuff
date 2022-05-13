@@ -96,7 +96,7 @@ class Part_A(tf.keras.models.Model):
 
 		self_attention = self.norm(self_attention_embeds + embeds) # shape: (batch_size, feature_size, seq_length, d_model)
 
-		lin_proj_self_attention = tf.reduce_sum(self.dense_projection(self_attention), axis = -2) # shape: (batch_size, feature_size, d_model)
+		lin_proj_self_attention = tf.reduce_mean(self.dense_projection(self_attention), axis = -2) # shape: (batch_size, feature_size, d_model)
 
 		# repeated_weights = tf.repeat(weights[tf.newaxis, ...], self.feature_size, axis = -1)
 
