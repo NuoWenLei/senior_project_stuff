@@ -4,12 +4,23 @@ import numpy as np
 
 class Cosine_Similarity_Algorithmic_Search():
 
-	def __init__(self, vocab, mat, num_closest = 3):
-		self.vocab = vocab
-		self.mat = mat
+	def __init__(self, vocab, mat, num_closest = 3, min_char = 5):
+		filtered_vocab, filtered_mat = self.cut_low_character_words(vocab, mat, min_char)
+		self.vocab = filtered_vocab
+		self.mat = filtered_mat
 		self.max_embed = get_max_magnitude(self.mat)
 		self.norm_embed = get_norm_matrix(self.mat)
 		self.num_closest = num_closest
+
+	def cut_low_character_words(self, vocab, mat, min_char):
+		new_voc = []
+		new_mat = []
+		for i, v in enumerate(vocab):
+			if len(v) >= min_char:
+				new_voc.append(v)
+				new_mat.append(mat[i])
+		
+		return np.array(new_voc), np.array(new_mat)
 
 	def __call__(self, feature_embeds, cosines, pred_mag = None):
 
