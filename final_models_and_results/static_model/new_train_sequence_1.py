@@ -10,6 +10,23 @@ from New_Approach_1 import *
 
 
 def train_sequence(path_to_params, dataset_name = "wine"):
+	"""
+	Umbrella training function that initializes, trains, and returns all associated models
+
+	Args:
+	- path_to_params: Path to JSON parameter files
+	- (Optional) dataset_name: name of dataset used for preprocessing differences
+
+	Output:
+	- Interpreter
+	- Cosine Similarity Algorithm
+	- Log of training, including:
+		* learner_mae: Learner MAE over each step
+		* meta_mae: Interpreter MAE over each meta-step
+		* learner_weight_magnitude: magnitude of weights in learner model over each step
+		* learner_bias_magnitude: magnitude of biases in learner model over each step
+		* guess_cos_sim: cosine similarity between guesses and target over each meta-step
+	"""
 	with open(path_to_params, "r") as params_json:
 		params = json.load(params_json)
 	dataset_generator = load_dataset_generator(params["DATA_PATH"], dataset_name = dataset_name)
@@ -23,6 +40,27 @@ def train_sequence(path_to_params, dataset_name = "wine"):
 	return part_a, cos_sim_algo, logs
 
 def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, interpreter_optimizer, vocab_to_number, algo, params):
+	"""
+	Training function that trains interpreter and return logs
+
+	Args:
+	- meta_interpreter_part_a: interpreter
+	- generator: dataset generator
+	- vocab: vocab mapper from number to word
+	- embed_mat: embedding matrix
+	- interpreter_optimizer: optimizer for training interpreter
+	- vocab_to_number: vocab mapper from word to number
+	- algo: cosine similarity algorithm
+	- params: overall parameters
+
+	Output:
+	- Log of training, including:
+		* learner_mae: Learner MAE over each step
+		* meta_mae: Interpreter MAE over each meta-step
+		* learner_weight_magnitude: magnitude of weights in learner model over each step
+		* learner_bias_magnitude: magnitude of biases in learner model over each step
+		* guess_cos_sim: cosine similarity between guesses and target over each meta-step
+	"""
 
 	all_meta_mae = []
 	all_learner_mae = []
@@ -41,7 +79,7 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 			base_model = get_base_learner(params["BASE_NEURONS"], params["BASE_LAYERS"], params["NUM_CLASSES"])
 			base_optimizer = tf.keras.optimizers.Adam()
 			
-			learner_mae, w_mag, b_mag, grads = train_function(base_model, meta_interpreter_part_a, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params)
+			learner_mae, w_mag, b_mag, grads = train_function(base_model, base_optimizer, batch, params)
 
 			meta_mae_metric, most_similar_idices = meta_step(base_model, meta_interpreter_part_a, feature_embeds, target_embed, interpreter_optimizer, algo, grads,target_col, covariance_matrix, params)
 
@@ -70,8 +108,10 @@ def meta_train_function(meta_interpreter_part_a, generator, vocab, embed_mat, in
 		"guess_cos_sim": all_guess_cos_sim
 		}
 
-def train_function(base_learner, meta_interpreter, feature_embeds, target_embed, base_optimizer, interpreter_optimizer, batch, params):
-	# TODO: Train base learner and meta interpreter and calculate
+def train_function(base_learner, base_optimizer, batch, params):
+	"""
+	
+	"""
 
 	X_train, X_test, y_train, y_test = batch
 
